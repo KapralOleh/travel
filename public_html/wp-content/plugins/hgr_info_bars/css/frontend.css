@@ -1,0 +1,13 @@
+div.top_info_bar_btn{
+	width: -moz-fit-content;
+	width: -webkit-fit-content;
+	width: fit-content;
+	margin: auto;
+	float: right;
+}
+.info_bar_close{
+	position: relative;
+	right: 0px;
+	margin-left: 10px;
+	font-size: 2em!important;
+}

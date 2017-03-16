@@ -1,0 +1,28 @@
+/*
+Theme Name: Hatch Theme
+Layout: Sidebar-Content
+*/
+
+
+.content-area {
+	float: left;
+	margin: 0 0 0 -50%;
+	width: 100%;
+}
+.site-main {
+	margin: 0 0 0 50%;
+}
+.site-content .widget-area {
+	float: left;
+	overflow: hidden;
+	width: 25%;
+}
+.site-content .second-widget-area {
+	float: left;
+	overflow: hidden;
+	width: 25%;
+}
+.site-footer {
+	clear: both;
+	width: 100%;
+}

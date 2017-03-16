@@ -1,0 +1,77 @@
+/* HGR Essentials */
+#fssearch_container {
+	width: 100%;
+	height: 100%;
+	background-color: rgba(232,229,229,0.97);
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 9999999999;
+}
+.close-btn {
+	position: fixed;
+	display: block;
+	width: 40px;
+	height: 40px;
+	top: 30px;
+	right: 30px;
+	overflow: hidden;
+	text-indent: 100%;
+	white-space: nowrap;
+}
+
+.fssearch_tip{
+	position: fixed;
+	display: block;
+	width: auto;
+	height: 40px;
+	top: 30px;
+	left: 30px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.close-btn::before, .close-btn::after {
+	content: '';
+	position: absolute;
+	display: inline-block;
+	width: 2px;
+	height: 24px;
+	top: 8px;
+	left: 19px;
+	background-color: #39393c;
+}
+.close-btn::before {
+	-webkit-transform: rotate(45deg);
+	-moz-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	-o-transform: rotate(45deg);
+	transform: rotate(45deg);
+}
+.close-btn::after {
+	-webkit-transform: rotate(-45deg);
+	-moz-transform: rotate(-45deg);
+	-ms-transform: rotate(-45deg);
+	-o-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+}
+#fssearch_container #searchform input[type="text"] {
+	margin: 100px 0px;
+	font-size: 140px;
+	font-weight: 700;
+	letter-spacing: -0.035em !important;
+	line-height: 1;
+	white-space: pre-wrap !important;
+	word-wrap: break-word;
+	border: 1px solid transparent;
+	text-rendering: geometricprecision;
+	height: 200px;
+	width:100%;
+	text-align:center;
+	background-color: transparent;
+}
+#fssearch_container #searchform input[type="text"]:focus {
+	outline:0 !important;
+}
+.fssearch_submit {
+	display: none;
+}

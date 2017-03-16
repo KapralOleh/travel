@@ -1,0 +1,168 @@
+.hgr_blog_posts, .wpb_hgr_blog_posts>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-blog-posts.png) !important
+}
+.hgr_content_box, .wpb_hgr_content_box>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-content-box.png) !important
+}
+.hgr_counter, .wpb_hgr_counter>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-counter.png) !important
+}
+.hgr_flip_card, .hgr_flipcard, .wpb_hgr_flip_card>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-flipcard.png) !important
+}
+.hgr_testimonials, .hgr_testimonials>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-testimonials.png) !important
+}
+.hgr_countdown, .hgr_countdown>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-countdown.png) !important
+}
+.hgr_rolloverpanel, .hgr_rolloverpanel>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-rollover-panel.png) !important
+}
+.hgr_morphingbutton, .hgr_morphingbutton>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-morphing-button.png) !important
+}
+.hgr_minimal_form, .hgr_minimal_form>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-minimal-form.png) !important
+}
+.hgr_icon_box, .wpb_hgr_icon_box>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-icon-box.png) !important
+}
+.hgr_icon_text, .wpb_hgr_icontext>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-icon-text.png) !important
+}
+.hgr_icon, .wpb_hgr_icon>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-icon.png) !important
+}
+.hgr_pie_chart, .wpb_hgr_pie_chart>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-pie-chart.png) !important
+}
+.wpb_hgr_pricing_tables.vc_shortcodes_container, .wpb_hgr_pricing_tables .wpb_content_element>.wpb_element_wrapper, .hgr_pricing_tables {
+	background-image: url(../gfx/hgr-pricing-tables.png) !important
+}
+.wpb_hgr_team.vc_shortcodes_container, .wpb_hgr_team .wpb_content_element>.wpb_element_wrapper, .hgr_team {
+	background-image: url(../gfx/hgr-team.png) !important
+}
+.hgr_gmap, .wpb_hgr_gmap>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-google-map.png) !important
+}
+.hgr_zoom_box, .wpb_hgr_zoom_box>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-zoom-box.png) !important
+}
+.hgr_button, .wpb_hgr_button>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-button.png) !important
+}
+.hgr_progressbar, .wpb_hgr_progressbar>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-progress-bar.png) !important
+}
+.wpb_hgr_accordion.vc_shortcodes_container, .wpb_hgr_accordion .wpb_content_element>.wpb_element_wrapper, .hgr_accordion {
+	background-image: url(../gfx/hgr-accordion.png) !important
+}
+.wpb_hgr_logocarousel.vc_shortcodes_container, .wpb_hgr_logocarousel .wpb_content_element>.wpb_element_wrapper, .hgr_logocarousel {
+	background-image: url(../gfx/hgr-logocarousel.png) !important
+}
+.hgr_advimage, .wpb_hgr_advimage>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-advanced-image.png) !important
+}
+.hgr_mailchimpcollector, .wpb_hgr_mailchimpcollector>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-mailchimpcollector.png) !important
+}
+.hgr_twitterfeed, .wpb_hgr_twitterfeed>.wpb_element_wrapper {
+	background-image: url(../gfx/hgr-twitterfeed.png) !important
+}
+.wpb_element_wrapper {
+	background-repeat: no-repeat
+}
+#hgr_xtnd_iconsearch {
+	margin-top: 10px;
+	width: 100%;
+	height: 225px;
+	float: right;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	border: 1px solid #d3d1d1;
+	background-color: #f6f6f6
+}
+.icons-display-screen {
+	width: 98.5%;
+	margin-top: 6px;
+	margin-left: 6px
+}
+.icons-display-screen div.listyle {
+	text-align: center;
+	display: block;
+	float: left;
+	margin: 2px;
+	padding: 3px;
+	position: relative;
+	width: 38px;
+	height: 38px;
+	color: #a0a0a0 !important;
+	overflow: hidden;
+	border: 2px solid #eaedf0;
+	border-radius: 3px;
+	background: none repeat scroll 0 0 #FFF
+}
+.icons-display-screen div.listyle:hover i {
+	z-index: 100;
+	zoom: 1.5;
+	font-size: 18px;
+	position: relative;
+	width: 38px;
+	line-height: 38px;
+	height: 38px;
+	display: block;
+	background: #89d8d5;
+	color: #000;
+	cursor: pointer
+}
+.icons-display-screen div.listyle>i {
+	font-size: 18px;
+	vertical-align: text-bottom;
+	display: inline-block;
+	line-height: 38px
+}
+.icons-display-screen div.selected {
+	border: 2px solid #89d8d5;
+	background: none repeat scroll 0 0 #f6f9fc
+}
+.searchicon {
+	width: 25% !important;
+	font-size: 13px;
+	line-height: 1.5em !important;
+	float: right;
+	vertical-align: middle;
+	margin-right: 15px;
+	padding: 5px 7px !important
+}
+.filterSets {
+	width: 156px !important;
+	float: right;
+	height: 30px !important;
+	padding: 3px !important;
+	margin-right: 10px !important
+}
+.iconpreview {
+	width: 370px;
+	height: 28px;
+	line-height: 24px;
+	font-size: 24px;
+	float: left;
+	text-align: left;
+	margin-top: 0;
+	display: inline-block;
+	margin-right: 14px
+}
+.iconpreview span {
+	font-size: 18px
+}
+.iconpreview>i {
+	font-size: 32px;
+	vertical-align: text-top
+}
+.hgr-icon-set-name {
+	font-size: 14px;
+	text-transform: capitalize;
+	cursor: pointer;
+	display: block
+}
