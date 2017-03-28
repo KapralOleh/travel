@@ -1,22 +1,10 @@
 if (document.getElementById("map")) {
               var map_hgr5808a7966a028;
-              var gmap_location_hgr5808a7966a028 = new google.maps.LatLng(49.841958, 24.065778);
+              var gmap_location_hgr5808a7966a028 = new google.maps.LatLng(49.829837, 24.029413
+);
 
               var GMAP_MODULE_hgr5808a7966a028 = "custom_style";
-
               function initialize() {
-                
-                // var featureOpts = [
-                //       {
-                //         stylers: [
-                //         { "visibility": "on" },
-                //         { "weight": 1 },
-                //         { "saturation": -100 },
-                //         { "lightness": -8 },
-                //         { "gamma": 1.18 }
-                //         ]
-                //       }
-                //     ];
                 var featureOpts = [
                       {
                         stylers: [
@@ -28,7 +16,7 @@ if (document.getElementById("map")) {
                       }
                     ];
                 var mapOptions = {
-                  zoom: 14,
+                  zoom: 15,
                   scrollwheel: false,
                   center: gmap_location_hgr5808a7966a028,
                   mapTypeControlOptions: {
@@ -56,7 +44,7 @@ if (document.getElementById("map")) {
                 });
 
                 var styledMapOptions = {
-                  name: "Travel-Room"
+                  name: "Travel look"
                 };
 
                 var customMapType_hgr5808a7966a028 = new google.maps.StyledMapType(featureOpts, styledMapOptions);

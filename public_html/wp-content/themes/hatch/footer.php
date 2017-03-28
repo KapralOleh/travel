@@ -82,6 +82,7 @@
       </div>
     </div>
 </div>
+
 <?php endif; ?>
 
   <script type="text/javascript">

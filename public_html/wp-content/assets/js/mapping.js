@@ -356,9 +356,9 @@ function initMap(sector, zoom, myLatLng) {
     console.log(sector)
     sector = sector || 'Europe'
     globalSector = sector;
-    zoom = zoom || 11;
+    zoom = zoom || 5;
     globalZoom = zoom;
-    myLatLng = myLatLng || {lat: 42.28, lng: 18.84};
+    myLatLng = myLatLng || {lat: 48.9148213, lng: 16.2493038};
     globalLatLng = myLatLng;
     var map = new google.maps.Map(document.getElementById('relaxMap'), {
       zoom: zoom,

@@ -43,7 +43,7 @@
           } else if ($category === "relax") {
         ?>
         <div class="vc_row wpb_row vc_row-fluid page-header">
-          <img src="<?php the_field('inner_image'); ?>">
+          <img class="full-with-image" src="<?php the_field('inner_image'); ?>">
         </div>
         <!-- Display the Post's content from category insights. -->
 
@@ -57,7 +57,7 @@
           } else if ($category === "guestbook") {
         ?>
          <div class="vc_row wpb_row vc_row-fluid page-header">
-          <img src="<?php the_field('inner_image'); ?>">
+          <img class="full-with-image" src="<?php the_field('inner_image'); ?>">
         </div>
         <!-- Display the Post's content from category insights. -->
         <div class="entry">
@@ -65,9 +65,6 @@
           <div class="row post-content">
             <div class="col-sm-12"><?php the_field('full_description'); ?></div>
           </div>
-         <div class="row subscribe">
-         <?php echo do_shortcode( '[contact-form-7 id="183" title="Contact form guestbook"]' ); ?>
-        </div>
         </div>
         <?php
           } else {

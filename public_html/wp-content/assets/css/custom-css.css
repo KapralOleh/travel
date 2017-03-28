@@ -1,26 +1,34 @@
+* {
+    font-family: Lato !important;
+}
 h1 {
 	font-size: 50px;
     line-height: 50px;
-    color:#3d4049;
-    font-family: 'Source Sans Pro';
+    color:#195568;
     letter-spacing: 0;
+    margin: 25px 0 !important;
 }
 h2 {
 	font-size: 40px;
     line-height: 40px; 
-    color:#3d4049;
-    font-family: 'Source Sans Pro';
+    color:#195568;
+    margin: 25px 0 !important;
 }
 h3 {
 	font-size: 30px;
     line-height: 30px;
-    color:#3d4049;
-    font-family: 'Source Sans Pro';
+    color:#195568;
+    margin: 25px 0 !important;
+}
+.light_scheme h1 {
+    color:#195568;
 }
 p {
 	font-size: 16px;
-    font-family: 'Source Sans Pro';
     color: #848484;
+}
+img.full-with-image {
+    width: 100%;
 }
 .travel-container {
     max-width: 1040px;
@@ -29,6 +37,7 @@ p {
 }
 .wpb_single_image h2{
     text-align: center;
+    font-weight: 500;
 }
 .navbar-brand img {
     max-width: 80px;
@@ -42,7 +51,7 @@ p {
     background: rgba(0, 0, 0, 0.89) !important;
 }
 .bka_menu, .bka_menu .navbar-default .navbar-nav>li.active>a, .dropdown-menu > li.active > a {
-    color: #fb8239;
+    color: #195568;
 }
 .navbar-default .navbar-toggle .icon-bar {
     background:  #fff;
@@ -51,7 +60,7 @@ p {
     border-color: #fff; 
 }
 .navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
-    background: rgb(3,155,229);
+    background: rgba(0, 0, 0, 0.89);
 }
 .blogPosts .entry {
     margin-top: 0;
@@ -87,8 +96,8 @@ p {
 }
 .property-type-tabs li a.active,
 .property-type-tabs li a:hover {
-    color: #fb8239;
-    border-bottom: 1px solid #fb8239;
+    color: #195568;
+    border-bottom: 1px solid #195568;
 }
 .post {
     padding-right: 0 !important;
@@ -123,7 +132,7 @@ p {
 .bka_footer ul li a:hover,
 .bka_footer .link-travel:hover,
 .bka_footer i.fa:hover:hover {
-    color: #fb8239;
+    color: #195568;
 }
 div.wpcf7-validation-errors {
     display: none !important;
@@ -143,10 +152,11 @@ div.wpcf7-validation-errors {
 }
 .second-page {
     margin-top: 60px;
-    padding-top: 50px;
+    // padding-top: 50px;
     background: url('/wp-content/assets/images/brushed.png');
 }
-.category {
+.category,
+#blogPosts {
     background: url('/wp-content/assets/images/brushed.png');
 }
 .category .container h1 {
@@ -176,6 +186,7 @@ div.wpcf7-validation-errors {
 .guestbook-posts h2,
 .news-posts h2 {
     margin-bottom: 20px;
+    color: #195568;
 }
 .reverse {
     flex-direction: row-reverse;
@@ -191,7 +202,10 @@ div.wpcf7-validation-errors {
     min-height: 300px;
 }
 a.news-link:hover {
-    color: #fb8239;
+    color: #195568;
+}
+.wpb_button, .wpb_content_element, ul.wpb_thumbnails-fluid>li {
+    margin-bottom: 0 !important;
 }
 .contact input[type="number"],
 .contact input[type="text"],
@@ -206,28 +220,28 @@ a.news-link:hover {
     background-color: transparent;
     color: #616161;
     padding-left: 15px;
-    font: 400 15px / 18px 'Source Sans Pro';
+    font: 400 15px / 18px Lato;
 }
 .contact textarea {
     height: 150px;
     resize: none;
 }
 .contact input[type="submit"] {
-    background-color: #fb8239;
+    background-color: #195568;
     border: none;
     height: 38px;
     color: #fff;
-    font: 900 15.15px / 24px 'Source Sans Pro';
+    font: 900 15.15px / 24px Lato;
 }
 .contact input[type="submit"]:hover {
   background-color: #db7435;
 }
 .contact label{
-    font: 500 20px / 18px 'Source Sans Pro';
+    font: 500 20px / 18px Lato;
     width: 100%;
 }
 #contact h4 {
-    color: #1b98e0;
+    color: #195568;
     text-transform: uppercase;
 }
 #contact .wpb_content_element {
@@ -237,11 +251,11 @@ i.fa {
     cursor: pointer;
 }
 i.fa:hover{
-    color: #1b98e0;
+    color: #195568;
 }
 .request-form .wpcf7-list-item-label,
 .request-form .small-text{
-    font: 400 13.27px 'Source Sans Pro';
+    font: 400 13.27px Lato;
 }
 span.wpcf7-list-item { 
     display: block;
@@ -282,8 +296,91 @@ video {
 .center-block h1 {
     color: rgba(34,34,34,0.75);
 }
-
-
+#booking {
+    min-height: 450px;
+}
+#booking .img-booking img{
+    height: 450px;
+}
+#booking .img-booking,
+#booking .img-booking + div {
+    margin-bottom: 0 !important;
+}
+#booking .item{
+    position: relative;
+}
+#booking .info{
+    position: absolute;
+    bottom: 0;
+    color: #FFF;
+    background-color: rgba(0,0,0,0.6);
+    width: 100%;
+    padding: 20px;
+}
+#booking .price {
+    float: right;
+    font: 800 30px/40px Lato;
+    color: #fad44c;
+}
+#booking .button-border {
+    border: 1px solid #fff;
+    padding: 5px;
+    color: #fff;
+    margin-top: 10px;
+}
+#booking .button-border-container {
+    margin-top: 10px;
+}
+#booking .button-border:hover {
+    border: 1px solid #fad44c;
+    padding: 5px;
+    color: #fad44c;
+    cursor: pointer;
+}
+#booking .desc {
+    font: 600 14px/30px Lato;
+}
+#booking .title {
+    font: 600 22px/30px Lato;
+}
+#booking .country {
+    font: 600 18px/30px Lato;
+}
+#booking .country img {
+    margin-left: 5px;
+}
+#booking .desc i {
+    margin-right: 4px;
+}
+.countries-block a img{
+    margin-right: 5px;
+}
+.countries-block a{
+    cursor: pointer;
+    display: inline-block;
+    width: 50%;
+    padding-left: 10px;
+    color: #3d4049;
+}
+.countries-block a:hover {
+    color: #195568;
+}
+.second-page #booking .info {
+    position: static;
+    background: transparent;
+}
+.second-page #booking .price {
+    float: none;
+}
+.second-page #booking .info {
+    color: #848484;
+}
+.second-page h1 {
+    margin-top: 25px;
+}
+.tx-slide-button {
+    margin-top: 10px !important;
+}
 @media (min-width: 768px) {
     .bka_menu {
         height: 60px;
@@ -308,6 +405,9 @@ video {
 		font-size: 15px;
         line-height: 17px;
 	}
+    .travel-container {
+        margin:0 auto 10px !important;
+    }
     .bka_menu {
         padding: 0 30px;
     }
@@ -324,7 +424,7 @@ video {
         top: 40%;
     }
     .blogPosts {
-        margin-top: 62px;
+        margin-top: 28px;
     }
     .videoWrapper video {
         display: none;
@@ -380,5 +480,8 @@ video {
     }
     .blogPosts .container {
         margin-top: 40px;
+    }
+    .property-type-tabs li {
+        width: 49%;
     }
 }
