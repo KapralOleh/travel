@@ -15,7 +15,7 @@
 
 <!-- single.php -->
 <div class="row blog blogPosts <?php echo (isset($hgr_options['blog_color_scheme']) ? $hgr_options['blog_color_scheme'] : '');?>" id="blogPosts">
-  <div class="container"> 
+  <!-- <div class="container">  -->
     <!-- posts -->
     <div class="col-md-12">
       <?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
@@ -107,7 +107,7 @@
     <!-- / posts --> 
     
   
-  </div>
+  <!-- </div> -->
 </div>
 <?php 
  	get_footer();

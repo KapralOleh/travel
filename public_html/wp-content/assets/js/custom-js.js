@@ -57,13 +57,13 @@ if (document.getElementById("map")) {
 
 
 jQuery('i.fa-vk').on('click', function(){
-     window.open('https://vk.com/ichicha', '_blank');
+     window.open('https://vk.com/club142540416', '_blank');
 });
 jQuery('i.fa-facebook').on('click', function(){
      window.open('https://www.facebook.com/ira.chik.9?fref=ts', '_blank');
 });
 jQuery('i.fa-instagram').on('click', function(){
-     window.open('https://www.instagram.com/chika_lv/', '_blank');
+     window.open('https://www.instagram.com/travellook_lviv/', '_blank');
 });
 // Tabs 
  jQuery('ul.tabs').each(function(){

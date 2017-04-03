@@ -391,9 +391,9 @@ function initMap(sector, zoom, myLatLng) {
     var markers = {};
     for (i in global_obj) {
       // Icon Url
-      var iconURL = '';
-      if (global_obj[i].custom_fields.sector.join() == 'Europe') {iconURL = '/wp-content/assets/images/blue.png';}
-      if (global_obj[i].custom_fields.sector.join() == 'Asia') {iconURL = '/wp-content/assets/images/orange.png';}
+      var iconURL = '/wp-content/assets/images/marker.png';
+      // if (global_obj[i].custom_fields.sector.join() == 'Europe') {iconURL = '/wp-content/assets/images/marker.png';}
+      // if (global_obj[i].custom_fields.sector.join() == 'Asia') {iconURL = '/wp-content/assets/images/orange.png';}
 
       if (sector == global_obj[i].custom_fields.sector.join()) {
         markers["marker"+i] = new google.maps.Marker({
@@ -412,11 +412,13 @@ function initMap(sector, zoom, myLatLng) {
 
     // Window content
     function getConcatValue(object) {
+        console.log(object)
         return ['<div id="content" style="width:auto;max-height:auto;">',
+          '<h4>'+object.title+'</h4>',
           '<img src="'+object.thumbnail+'" style="margin:0" id="firstHeading" class="firstHeading">',
           '<div id="bodyContent">',
             '<a target="_blank" href="'+object.url+'">',
-              'Show more',
+              'Читати',
             '</a>',
           '</div>',
         '</div>'].join('');

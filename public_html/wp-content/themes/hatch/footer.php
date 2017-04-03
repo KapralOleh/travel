@@ -47,7 +47,7 @@
             <ul>
               <li><a href="/news/">Новини</a></li>
               <hr>
-              <li><a href="/relax/">Відпочивай з нами</a></li>
+              <li><a href="/relax-with-us/">Відпочивай з нами</a></li>
               <li><a href="/country/">Країни</a></li>
             </ul>
           </div>
@@ -113,7 +113,7 @@
     
  </body>
  <!-- <script src="/wp-content/assets/js/jquery-3.1.1.min.js"></script> -->
- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBGjXHUp72CZej_umEzKGXfdRKs_pncl9k"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnn66BofhGgZekbhrVtcZnTieyQSUAZLw"></script>
   <script src="/wp-content/assets/js/custom-js.js"></script>
   <script src="/wp-content/assets/js/mapping.js"></script>
   
