@@ -20,18 +20,23 @@ h3 {
     color:#195568;
     padding: 25px 0 !important;
 }
+p {
+    font-size: 16px;
+    color: #848484;
+}
 .blogPosts {
     margin-top: 80px;
 }
-.light_scheme h1 {
+.light_scheme h1,
+.light_scheme h2 {
     color:#195568;
-}
-p {
-	font-size: 16px;
-    color: #848484;
 }
 img.full-with-image {
     width: 100%;
+}
+.tx-slide-title {
+    padding-left: 2px !important;
+    padding-right: 2px !important;
 }
 .travel-container {
     max-width: 1040px;
@@ -396,17 +401,33 @@ video {
 .countries-block a img{
     margin-right: 5px;
 }
+.vc_column_container>.vc_column-inner {
+    padding: 0 !important;
+}
+#contact .vc_column_container>.vc_column-inner{
+    padding: 0 15px !important;
+}
 .countries-block a{
     cursor: pointer;
     display: inline-block;
     width: 50%;
-    color: #195568;
+    color: #fff;
+    text-align: center;
     font-size: 16px;
     line-height: 24px;
+    text-transform: uppercase;
 }
-.countries-block a:hover {
-    color: #195568;
+
+.countries-block .wpb_single_image+div {
+    padding: 10px 0;
+    background: #195568;
 }
+.second-page .countries-block .wpb_single_image+div {
+    margin-top: -25px !important;
+}
+// .countries-block a:hover {
+//     color: #195568;
+// }
 .second-page #booking .info {
     position: static;
     background: transparent;
@@ -504,6 +525,9 @@ video {
     .news-posts .entry {
         padding: 40px 0;
         width: 100%;
+    }
+    .wpcf7-form {
+        margin-top: 25px;
     }
     .blogPosts .img-responsive {
         margin: 0 auto 40px;

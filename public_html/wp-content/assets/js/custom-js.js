@@ -60,7 +60,7 @@ jQuery('i.fa-vk').on('click', function(){
      window.open('https://vk.com/club142540416', '_blank');
 });
 jQuery('i.fa-facebook').on('click', function(){
-     window.open('https://www.facebook.com/ira.chik.9?fref=ts', '_blank');
+     window.open('https://www.facebook.com/TravelLook.Lviv/', '_blank');
 });
 jQuery('i.fa-instagram').on('click', function(){
      window.open('https://www.instagram.com/travellook_lviv/', '_blank');

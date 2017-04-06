@@ -48,7 +48,7 @@
               <li><a href="/news/">Новини</a></li>
               <hr>
               <li><a href="/relax-with-us/">Відпочивай з нами</a></li>
-              <li><a href="/country/">Країни</a></li>
+              <li><a href="/countries/">Країни</a></li>
             </ul>
           </div>
           <div class="vc_col-sm-4">
