@@ -1,5 +1,4 @@
 ﻿<?php
-
 class WDSViewSliders_wds {
   ////////////////////////////////////////////////////////////////////////////////////////
   // Events                                                                             //
@@ -31,85 +30,106 @@ class WDSViewSliders_wds {
     $order_by = (isset($_POST['order_by']) ? esc_html(stripslashes($_POST['order_by'])) : 'id');
     $order_class = 'manage-column column-title sorted ' . $asc_or_desc;
     $ids_string = '';
-    ?>
-     <style>
-    <?php   
-      global $wp_version;
-      if (version_compare($wp_version, '4','<')) {
-    ?>
+    $header_title = __('Sliders', 'wds');
+    $slider_button_array = array(
+      'publish_all' => __('Publish', 'wds'),
+      'unpublish_all' => __('Unpublish', 'wds'),
+      'delete_all' => __('Delete', 'wds'),
+      'duplicate_all' => __('Duplicate', 'wds'),
+      'export' => __('Export', 'wds'),
+      'merge_sliders' => __('Merge', 'wds')
+    );
+    global $wp_version;
+    if (version_compare($wp_version, '4','<')) {
+        ?>
+    <style>
       #wpwrap {
-        background-color:#F1F1F1
+        background-color: #F1F1F1;
       }
       @media  screen and (max-width: 640px) {
         .buttons_div input {
-          width:31%;
-          font-size:10px;
+          width: 31%;
+          font-size: 10px;
         }
-        
         .tablenav{
           height:auto
         }
-        
-        #wpcontent{
-          margin-left:40px!important
+        #wpcontent {
+          margin-left: 40px !important
         }
         .alignleft  {
           display:none;
         }
       }
-
-    <?php
+    </style>
+      <?php
       }
     ?>
-    </style>
-    <div style="clear: both; float: left; width: 99%;">
-         <div style="float: left; font-size: 14px; font-weight: bold;">
-        This section allows you to create, edit and delete sliders.
-        <a style="color: blue; text-decoration: none;" target="_blank" href="https://web-dorado.com/wordpress-slider-wd/adding-images.html">Read More in User Manual</a>
-      </div>
-      <div style="float: right; text-align: right;">
-        <a style="text-decoration: none;" target="_blank" href="https://web-dorado.com/files/fromslider.php">
-          <img width="215" border="0" alt="web-dorado.com" src="<?php echo WD_S_URL . '/images/wd_logo.png'; ?>" />
-        </a>
-      </div>
-    </div>
-    <form class="wrap wds_form" id="sliders_form" method="post" action="admin.php?page=sliders_wds" style="float: left; width: 99%;">
+    <form class="wrap wds_form" id="sliders_form" method="post" action="admin.php?page=sliders_wds" style="float: left; width: 98%;">
       <?php wp_nonce_field('nonce_wd', 'nonce_wd'); ?>
-      <span class="slider-icon"></span>
-      <h2>
-        Sliders
-        <a href="" class="add-new-h2" onclick="spider_set_input_value('task', 'add');
-                 spider_form_submit(event, 'sliders_form')">Add new</a>
-      </h2>
-  
-      <div class="tablenav top" style="margin-bottom:25px">
-        <?php
-        WDW_S_Library::search('Name', $search_value, 'sliders_form');
-        ?>
-     <div class="buttons_div">
-        <span class="wds_button-secondary non_selectable wds_check_all" onclick="spider_check_all_items()">
-          <input type="checkbox" id="check_all_items" name="check_all_items" onclick="spider_check_all_items_checkbox()" style="margin: 0; vertical-align: middle;" />
-          <span style="vertical-align: middle;">Select All</span>
-        </span>
-        <input class="wds_button-secondary wds_publish_all" type="submit" onclick="spider_set_input_value('task', 'publish_all')" value="Publish" />
-        <input class="wds_button-secondary wds_unpublish_all" type="submit" onclick="spider_set_input_value('task', 'unpublish_all')" value="Unpublish" />
-        <input class="wds_button-secondary wds_duplicate_all" type="submit" onclick="spider_set_input_value('task', 'duplicate_all')" value="Duplicate" />
-        <input type="button" class="wds_button-secondary wds_export" onclick="alert('This functionality is disabled in free version.')" value="Export" />
+      <div class="wds_opacity_export" onclick="jQuery('.wds_opacity_export').hide();jQuery('.wds_exports').hide();"></div>
+      <div class="wds_exports">
+        <input type="checkbox" name="imagesexport" id="imagesexport" checked="checked" />
+        <label for="imagesexport">Check the box to export the images included within sliders</label>
+        <a class="button-secondary wds_export" type="button" href="<?php echo add_query_arg(array('action' => 'WDSExport'), admin_url('admin-ajax.php')); ?>" onclick="wds_get_checked()">Export</a>
+        <input type="button" class="button-secondary" onclick="jQuery('.wds_exports').hide();jQuery('.wds_opacity_export').hide(); return false;" value="Cancel" />
+      </div>
+      <div class="wds_opacity_merge" onclick="jQuery('.wds_opacity_merge').hide();jQuery('.wds_merge').hide();"></div>
+      <div class="wds_merge">
+        <select class="select_icon select_icon_320" style="width:200px" name="select_slider_merge" id="select_slider_merge" style="margin-bottom: 6px;">
+         <?php 
+          foreach ($rows_data as $row_data) {
+            ?>
+          <option value="<?php echo $row_data->id; ?>"><?php echo $row_data->name; ?></option>
+            <?php
+          }
+          ?>
+        </select>
+        <input class="button-secondary" type="submit" onclick="spider_set_input_value('task', 'merge_sliders');"  value="Merge" />
+        <input type="button" class="button-secondary" onclick="jQuery('.wds_merge').hide();jQuery('.wds_opacity_merge').hide(); return false;" value="Cancel" />
+        <div class="spider_description">Select slider to use settings from.</div>
+      </div>
+      <div class="wds_opacity_import" onclick="jQuery('.wds_opacity_import').hide();jQuery('.wds_imports').hide();"></div>
+      <div class="wds_imports">
+        <input type="file" name="fileimport" id="fileimport" />
+        <input class="button-secondary" type="submit" onclick="if(wds_getfileextension(document.getElementById('fileimport').value)){spider_set_input_value('task', 'import');} else return false;"  value="Import" />
+        <input type="button" class="button-secondary" onclick="jQuery('.wds_imports').hide();jQuery('.wds_opacity_import').hide(); return false;" value="Cancel" />
+        <div class="spider_description">Choose file (use .zip format).</div>
+      </div>
+      <div>
+        <span class="slider-icon"></span>
+        <h2 class="wds_default">
+          <?php echo $header_title; ?>
+          <a href="" class="add-new-h2" onclick="spider_set_input_value('task', 'add');
+                                                 spider_form_submit(event, 'sliders_form')">Add new</a>
+        </h2>
+      </div>
+      <div class="buttons_div_right">
         <input type="button" class="wds_button-secondary wds_import" onclick="alert('This functionality is disabled in free version.')" value="Import" />
-        <input class="wds_button-secondary wds_delete_all" type="submit" onclick="if (confirm('Do you want to delete selected items?')) {
-                                                       spider_set_input_value('task', 'delete_all');
-                                                     } else {
-                                                       return false;
-                                                     }" value="Delete" />
       </div>
+      <?php WDW_S_Library::search('Name', $search_value, 'sliders_form'); ?>
+      <div class="tablenav bottom buttons_div buttons_div_left">
+        <span class="wds_button-secondary non_selectable wds_check_all" onclick="spider_check_all_items()">
+          <input type="checkbox" id="check_all_items" name="check_all_items" onclick="spider_check_all_items_checkbox()"  style="margin: 0; vertical-align: middle;" />
+          <span style="vertical-align: middle;"><?php _e('Select All', 'wds'); ?></span>
+        </span>
+        <select class="select_icon bulk_action" style="margin-bottom: 6px;">
+          <option value=""><?php _e('Bulk Actions', 'wds'); ?></option>
+          <?php 
+          foreach ($slider_button_array as $key => $value) {
+            ?>
+          <option value="<?php echo $key; ?>"><?php echo $value; ?></option>
+            <?php
+          }
+          ?>
+        </select>
+        <input class="wds_button-secondary wds_apply_slider" type="button" title="<?php _e('Apply', 'wds'); ?>" onclick="if (!wds_bulk_actions('.bulk_action')) {return false}" value="<?php _e('Apply', 'wds'); ?>" />
+        <?php WDW_S_Library::html_page_nav($page_nav['total'], $page_nav['limit'], 'sliders_form'); ?>
       </div>
-      <?php
-        WDW_S_Library::html_page_nav($page_nav['total'], $page_nav['limit'], 'sliders_form');
-      ?>
       <table class="wp-list-table widefat fixed pages">
         <thead>
           <th class="manage-column column-cb check-column table_small_col"><input id="check_all" type="checkbox" onclick="spider_check_all(this)" style="margin:0;" /></th>
-          <th class="table_small_col <?php if ($order_by == 'id') {echo $order_class;} ?>">
+          <th class="sortable table_small_col <?php if ($order_by == 'id') {echo $order_class;} ?>">
             <a onclick="spider_set_input_value('task', '');
                         spider_set_input_value('order_by', 'id');
                         spider_set_input_value('asc_or_desc', '<?php echo ((isset($_POST['asc_or_desc']) && isset($_POST['order_by']) && (esc_html(stripslashes($_POST['order_by'])) == 'id') && esc_html(stripslashes($_POST['asc_or_desc'])) == 'asc') ? 'desc' : 'asc'); ?>');
@@ -117,11 +137,8 @@ class WDSViewSliders_wds {
               <span>ID</span><span class="sorting-indicator"></span>
             </a>
           </th>
-          
-          
-              
           <th class="mobile_hide table_big_col">Slider</th>
-          <th class="<?php if ($order_by == 'name') {echo $order_class;} ?>">
+          <th class="sortable <?php if ($order_by == 'name') {echo $order_class;} ?>">
             <a onclick="spider_set_input_value('task', '');
                         spider_set_input_value('order_by', 'name');
                         spider_set_input_value('asc_or_desc', '<?php echo ((isset($_POST['asc_or_desc']) && isset($_POST['order_by']) && (esc_html(stripslashes($_POST['order_by'])) == 'name') && esc_html(stripslashes($_POST['asc_or_desc'])) == 'asc') ? 'desc' : 'asc'); ?>');
@@ -132,7 +149,7 @@ class WDSViewSliders_wds {
           <th class="mobile_hide table_big_col">Slides</th>
           <th class="table_big_col">Shortcode</th>
           <th class="mobile_hide table_large_col">PHP function</th>
-          <th class="mobile_hide table_big_col <?php if ($order_by == 'published') {echo $order_class;} ?>">
+          <th class="sortable mobile_hide table_bigger_col <?php if ($order_by == 'published') {echo $order_class;} ?>">
             <a onclick="spider_set_input_value('task', '');
                         spider_set_input_value('order_by', 'published');
                         spider_set_input_value('asc_or_desc', '<?php echo ((isset($_POST['asc_or_desc']) && isset($_POST['order_by']) && (esc_html(stripslashes($_POST['order_by'])) == 'published') && esc_html(stripslashes($_POST['asc_or_desc'])) == 'asc') ? 'desc' : 'asc'); ?>');
@@ -157,7 +174,7 @@ class WDSViewSliders_wds {
                 <td class="table_small_col check-column"><input id="check_<?php echo $row_data->id; ?>" name="check_<?php echo $row_data->id; ?>" onclick="spider_check_all(this)" type="checkbox" /></td>
                 <td class="table_small_col"><?php echo $row_data->id; ?></td>
                 <td class="mobile_hide table_big_col">
-                  <img title="<?php echo $row_data->name; ?>" style="border: 1px solid #CCCCCC; max-width: 70px; max-height: 50px;" src="<?php echo $prev_img_url . '?date=' . date('Y-m-y H:i:s'); ?>">
+                  <img title="<?php echo $row_data->name; ?>" style="border: 1px solid #CCCCCC; max-width: 70px; max-height: 50px;" src="<?php echo add_query_arg('date', date('Y-m-y H:i:s'), $prev_img_url); ?>">
                 </td>
                 <td class="wds_640">
                   <a onclick="spider_set_input_value('task', 'edit');
@@ -177,7 +194,7 @@ class WDSViewSliders_wds {
                 <td class="mobile_hide table_large_col" style="padding-left: 0; padding-right: 0;">
                   <input type="text" value="&#60;?php wd_slider(<?php echo $row_data->id; ?>); ?&#62;" onclick="spider_select_value(this)" size="23" readonly="readonly" style="padding-left: 1px; padding-right: 1px;" />
                 </td>
-                <td class="mobile_hide table_big_col">
+                <td class="mobile_hide table_bigger_col">
                   <a onclick="spider_set_input_value('task', '<?php echo $published; ?>');spider_set_input_value('current_id', '<?php echo $row_data->id; ?>');spider_form_submit(event, 'sliders_form')" href=""><img src="<?php echo WD_S_URL . '/images/sliderwdpng/' . $published_image . '.png'; ?>"></img></a>
                 </td>
                 <td class="mobile_hide table_big_col" colspan="3">
@@ -205,6 +222,9 @@ class WDSViewSliders_wds {
               $ids_string .= $row_data->id . ',';
             }
           }
+          else {
+            echo WDW_S_Library::no_items($header_title);
+          }
           ?>
         </tbody>
       </table>
@@ -218,6 +238,10 @@ class WDSViewSliders_wds {
   }
 
   public function edit($id, $reset = FALSE) {
+    $wds_global_options = get_option("wds_global_options", 0);
+    $global_options = json_decode($wds_global_options);
+    $spider_uploader = isset($global_options->spider_uploader) ? $global_options->spider_uploader : 0;
+    
     $query_url = add_query_arg(array('action' => 'addImage', 'width' => '700', 'height' => '550', 'extensions' => 'jpg,jpeg,png,gif', 'callback' => 'bwg_add_preview_image'), admin_url('admin-ajax.php'));
     $query_url = wp_nonce_url($query_url, 'addImage', 'nonce_wd');
 
@@ -255,27 +279,9 @@ class WDSViewSliders_wds {
       'fa-square-o' => 'Square O',
       'fa-square' => 'Square',
     );
-    $font_families = array(
-      'arial' => 'Arial',
-      'lucida grande' => 'Lucida grande',
-      'segoe ui' => 'Segoe ui',
-      'tahoma' => 'Tahoma',
-      'trebuchet ms' => 'Trebuchet ms',
-      'verdana' => 'Verdana',
-      'cursive' =>'Cursive',
-      'fantasy' => 'Fantasy',
-      'monospace' => 'Monospace',
-      'serif' => 'Serif',
-    );
-    if ($row->possib_add_ffamily != '') {
-      $possib_add_ffamily = explode("*WD*", $row->possib_add_ffamily);
-      foreach($possib_add_ffamily as $possib_add_value) {
-        if ($possib_add_value) {
-          $font_families[strtolower($possib_add_value)] = $possib_add_value;
-        }
-      }
-    }
-    $google_fonts = array('ABeeZee' => 'ABeeZee', 'Abel' => 'Abel', 'Abril+Fatface' => 'Abril Fatface', 'Aclonica' => 'Aclonica', 'Acme' => 'Acme', 'Actor' => 'Actor', 'Adamina' => 'Adamina', 'Advent+Pro' => 'Advent Pro', 'Aguafina+Script' => 'Aguafina Script', 'Akronim' => 'Akronim', 'Aladin' => 'Aladin', 'Aldrich' => 'Aldrich', 'Alegreya' => 'Alegreya', 'Alegreya+SC' => 'Alegreya SC', 'Alex+Brush' => 'Alex Brush', 'Alfa+Slab+One' => 'Alfa Slab One', 'Alice' => 'Alice', 'Alike' => 'Alike', 'Alike+Angular' => 'Alike Angular', 'Allan' => 'Allan', 'Allerta' => 'Allerta', 'Allura' => 'Allura', 'Almendra' => 'Almendra', 'Almendra+display' => 'Almendra Display', 'Almendra+sc' => 'Almendra SC', 'Amarante' => 'Amarante', 'Amaranth' => 'Amaranth', 'Amatic+sc' => 'Amatic SC', 'Amethysta' => 'Amethysta', 'Anaheim' => 'Anaheim', 'Andada' => 'Andada', 'Andika' => 'Andika', 'Angkor' => 'Angkor', 'Annie+Use+Your+Telescope' => 'Annie Use Your Telescope', 'Anonymous+Pro' => 'Anonymous Pro', 'Antic' => 'Antic', 'Antic+Didone' => 'Antic Didone', 'Antic+Slab' => 'Antic Slab', 'Anton' => 'Anton', 'Arapey' => 'Arapey', 'Arbutus' => 'Arbutus', 'Arbutus+slab' => 'Arbutus Slab', 'Architects+daughter' => 'Architects Daughter', 'Archivo+black' => 'Archivo Black', 'Archivo+narrow' => 'Archivo Narrow', 'Arimo' => 'Arimo', 'Arizonia' => 'Arizonia', 'Armata' => 'Armata', 'Artifika' => 'Artifika', 'Arvo' => 'Arvo', 'Asap' => 'Asap', 'Asset' => 'Asset', 'Astloch' => 'Astloch', 'Asul' => 'Asul', 'Atomic+age' => 'Atomic Age', 'Aubrey' => 'Aubrey', 'Audiowide' => 'Audiowide', 'Autour+one' => 'Autour One', 'Average' => 'Average', 'Average+Sans' => 'Average Sans', 'Averia+Gruesa+Libre' => 'Averia Gruesa Libre', 'Averia+Libre' => 'Averia Libre', 'Averia+Sans+Libre' => 'Averia Sans Libre', 'Averia+Serif+Libre' => 'Averia Serif Libre', 'Bad+Script' => 'Bad Script', 'Balthazar' => 'Balthazar', 'Bangers' => 'Bangers', 'Basic' => 'Basic', 'Battambang' => 'Battambang', 'Baumans' => 'Baumans', 'Bayon' => 'Bayon', 'Belgrano' => 'Belgrano', 'BenchNine' => 'BenchNine', 'Bentham' => 'Bentham', 'Berkshire+Swash' => 'Berkshire Swash', 'Bevan' => 'Bevan', 'Bigelow+Rules' => 'Bigelow Rules', 'Bigshot+One' => 'Bigshot One', 'Bilbo' => 'Bilbo', 'Bilbo+Swash+Caps' => 'Bilbo Swash Caps', 'Bitter' => 'Bitter', 'Black+Ops+One' => 'Black Ops One', 'Bokor' => 'Bokor', 'Bonbon' => 'Bonbon', 'Boogaloo' => 'Boogaloo', 'Bowlby+One' => 'Bowlby One', 'bowlby+One+SC' => 'Bowlby One SC', 'Brawler' => 'Brawler', 'Bree+Serif' => 'Bree Serif', 'Bubblegum+Sans' => 'Bubblegum Sans', 'Bubbler+One' => 'Bubbler One', 'Buda' => 'Buda', 'Buenard' => 'Buenard', 'Butcherman' => 'Butcherman', 'Butterfly+Kids' => 'Butterfly Kids', 'Cabin' => 'Cabin', 'Cabin+Condensed' => 'Cabin Condensed', 'Cabin+Sketch' => 'Cabin Sketch', 'Caesar+Dressing' => 'Caesar Dressing', 'Cagliostro' => 'Cagliostro', 'Calligraffitti' => 'Calligraffitti', 'Cambo' => 'Cambo', 'Candal' => 'Candal', 'Cantarell' => 'Cantarell', 'Cantata+One' => 'Cantata One', 'Cantora+One' => 'Cantora One', 'Capriola' => 'Capriola', 'Cardo' => 'Cardo', 'Carme' => 'Carme', 'Carrois+Gothic' => 'Carrois Gothic', 'Carrois+Gothic+SC' => 'Carrois Gothic SC', 'Carter+One' => 'Carter One', 'Caudex' => 'Caudex', 'Cedarville+cursive' => 'Cedarville Cursive', 'Ceviche+One' => 'Ceviche One', 'Changa+One' => 'Changa One', 'Chango' => 'Chango', 'Chau+philomene+One' => 'Chau Philomene One', 'Chela+One' => 'Chela One', 'Chelsea+Market' => 'Chelsea Market', 'Chenla' => 'Chenla', 'Cherry+Cream+Soda' => 'Cherry Cream Soda', 'Chewy' => 'Chewy', 'Chicle' => 'Chicle', 'Chivo' => 'Chivo', 'Cinzel' => 'Cinzel', 'Cinzel+Decorative' => 'Cinzel Decorative', 'Clicker+Script' => 'Clicker Script', 'Coda' => 'Coda', 'Coda+Caption' => 'Coda Caption', 'Codystar' => 'Codystar', 'Combo' => 'Combo', 'Comfortaa' => 'Comfortaa', 'Coming+soon' => 'Coming Soon', 'Concert+One' => 'Concert One', 'Condiment' => 'Condiment', 'Content' => 'Content', 'Contrail+One' => 'Contrail One', 'Convergence' => 'Convergence', 'Cookie' => 'Cookie', 'Copse' => 'Copse', 'Corben' => 'Corben', 'Courgette' => 'Courgette', 'Cousine' => 'Cousine', 'Coustard' => 'Coustard', 'Covered+By+Your+Grace' => 'Covered By Your Grace', 'Crafty+Girls' => 'Crafty Girls', 'Creepster' => 'Creepster', 'Crete+Round' => 'Crete Round', 'Crimson+Text' => 'Crimson Text', 'Croissant+One' => 'Croissant One', 'Crushed' => 'Crushed', 'Cuprum' => 'Cuprum', 'Cutive' => 'Cutive', 'Cutive+Mono' => 'Cutive Mono', 'Damion' => 'Damion', 'Dancing+Script' => 'Dancing Script', 'Dangrek' => 'Dangrek', 'Dawning+of+a+New+Day' => 'Dawning of a New Day', 'Days+One' => 'Days One', 'Delius' => 'Delius', 'Delius+Swash+Caps' => 'Delius Swash Caps', 'Delius+Unicase' => 'Delius Unicase', 'Della+Respira' => 'Della Respira', 'Denk+One' => 'Denk One', 'Devonshire' => 'Devonshire', 'Didact+Gothic' => 'Didact Gothic', 'Diplomata' => 'Diplomata', 'Diplomata+SC' => 'Diplomata SC', 'Domine' => 'Domine', 'Donegal+One' => 'Donegal One', 'Doppio+One' => 'Doppio One', 'Dorsa' => 'Dorsa', 'Dosis' => 'Dosis', 'Dr+Sugiyama' => 'Dr Sugiyama', 'Droid+Sans' => 'Droid Sans', 'Droid+Sans+Mono' => 'Droid Sans Mono', 'Droid+Serif' => 'Droid Serif', 'Duru+Sans' => 'Duru Sans', 'Dynalight' => 'Dynalight', 'Eb+Garamond' => 'EB Garamond', 'Eagle+Lake' => 'Eagle Lake', 'Eater' => 'Eater', 'Economica' => 'Economica', 'Electrolize' => 'Electrolize', 'Elsie' => 'Elsie', 'Elsie+Swash+Caps' => 'Elsie Swash Caps', 'Emblema+One' => 'Emblema One', 'Emilys+Candy' => 'Emilys Candy', 'Engagement' => 'Engagement', 'Englebert' => 'Englebert', 'Enriqueta' => 'Enriqueta', 'Erica+One' => 'Erica One', 'Esteban' => 'Esteban', 'Euphoria+Script' => 'Euphoria Script', 'Ewert' => 'Ewert', 'Exo' => 'Exo', 'Expletus+Sans' => 'Expletus Sans', 'Fanwood+Text' => 'Fanwood Text', 'Fascinate' => 'Fascinate', 'Fascinate+Inline' => 'Fascinate Inline', 'Faster+One' => 'Faster One', 'Fasthand' => 'Fasthand', 'Federant' => 'Federant', 'Federo' => 'Federo', 'Felipa' => 'Felipa', 'Fenix' => 'Fenix', 'Finger+Paint' => 'Finger Paint', 'Fjalla+One' => 'Fjalla One', 'Fjord+One' => 'Fjord One', 'Flamenco' => 'Flamenco', 'Flavors' => 'Flavors', 'Fondamento' => 'Fondamento', 'Fontdiner+swanky' => 'Fontdiner Swanky', 'Forum' => 'Forum', 'Francois+One' => 'Francois One', 'Freckle+Face' => 'Freckle Face', 'Fredericka+the+Great' => 'Fredericka the Great', 'Fredoka+One' => 'Fredoka One', 'Freehand' => 'Freehand', 'Fresca' => 'Fresca', 'Frijole' => 'Frijole', 'Fruktur' => 'Fruktur', 'Fugaz+One' => 'Fugaz One', 'GFS+Didot' => 'GFS Didot', 'GFS+Neohellenic' => 'GFS Neohellenic', 'Gabriela' => 'Gabriela', 'Gafata' => 'Gafata', 'Galdeano' => 'Galdeano', 'Galindo' => 'Galindo', 'Gentium+Basic' => 'Gentium Basic', 'Gentium+Book+Basic' => 'Gentium Book Basic', 'Geo' => 'Geo', 'Geostar' => 'Geostar', 'Geostar+Fill' => 'Geostar Fill', 'Germania+One' => 'Germania One', 'Gilda+Display' => 'Gilda Display', 'Give+You+Glory' => 'Give You Glory', 'Glass+Antiqua' => 'Glass Antiqua', 'Glegoo' => 'Glegoo', 'Gloria+Hallelujah' => 'Gloria Hallelujah', 'Goblin+One' => 'Goblin One', 'Gochi+Hand' => 'Gochi Hand', 'Gorditas' => 'Gorditas', 'Goudy+Bookletter+1911' => 'Goudy Bookletter 1911', 'Graduate' => 'Graduate', 'Grand+Hotel' => 'Grand Hotel', 'Gravitas+One' => 'Gravitas One', 'Great+Vibes' => 'Great Vibes', 'Griffy' => 'Griffy', 'Gruppo' => 'Gruppo', 'Gudea' => 'Gudea', 'Habibi' => 'Habibi', 'Hammersmith+One' => 'Hammersmith One', 'Hanalei' => 'Hanalei', 'Hanalei+Fill' => 'Hanalei Fill', 'Handlee' => 'Handlee', 'Hanuman' => 'Hanuman', 'Happy+Monkey' => 'Happy Monkey', 'Headland+One' => 'Headland One', 'Henny+Penny' => 'Henny Penny', 'Herr+Von+Muellerhoff' => 'Herr Von Muellerhoff', 'Holtwood+One +SC' => 'Holtwood One SC', 'Homemade+Apple' => 'Homemade Apple', 'Homenaje' => 'Homenaje', 'IM+Fell+DW+Pica' => 'IM Fell DW Pica', 'IM+Fell+DW+Pica+SC' => 'IM Fell DW Pica SC', 'IM+Fell+Double+Pica' => 'IM Fell Double Pica', 'IM+Fell+Double+Pica+S' => 'IM Fell Double Pica S', 'IM+Fell+English' => 'IM Fell English', 'IM+Fell+English+SC' => 'IM Fell English SC', 'IM+Fell+French+Canon' => 'IM Fell French Canon', 'IM+Fell+French+Canon+SC' => 'IM Fell French Canon SC', 'IM+Fell+Great+Primer' => 'IM Fell Great Primer', 'IM+Fell+Great+Primer+SC' => 'IM Fell Great Primer SC', 'Iceberg' => 'Iceberg', 'Iceland' => 'Iceland', 'Imprima' => 'Imprima', 'Inconsolata' => 'Inconsolata', 'Inder' => 'Inder', 'Indie+Flower' => 'Indie Flower', 'Inika' => 'Inika', 'Irish+Grover' => 'Irish Grover', 'Istok+Web' => 'Istok Web', 'Italiana' => 'Italiana', 'Italianno' => 'Italianno', 'Jacques+Francois' => 'Jacques Francois', 'Jacques+Francois+Shadow' => 'Jacques Francois Shadow', 'Jim+Nightshade' => 'Jim Nightshade', 'Jockey+One' => 'Jockey One', 'Jolly+Lodger' => 'Jolly Lodger', 'Josefin+Sans' => 'Josefin Sans', 'Josefin+Slab' => 'Josefin Slab', 'Joti+One' => 'Joti One', 'Judson' => 'Judson', 'Julee' => 'Julee', 'Julius+Sans+One' => 'Julius Sans One', 'Junge' => 'Junge', 'Jura' => 'Jura', 'Just+Another+Hand' => 'Just Another Hand', 'Just+Me+Again+Down+Here' => 'Just Me Again Down Here', 'Kameron' => 'Kameron', 'Karla' => 'Karla', 'Kaushan+Script' => 'Kaushan Script', 'Kavoon' => 'Kavoon', 'Keania+One' => 'Keania One', 'kelly+Slab' => 'Kelly Slab', 'Kenia' => 'Kenia', 'Khmer' => 'Khmer', 'Kite+One' => 'Kite One', 'Knewave' => 'Knewave', 'Kotta+One' => 'Kotta One', 'Koulen' => 'Koulen', 'Kranky' => 'Kranky', 'Kreon' => 'Kreon', 'Kristi' => 'Kristi', 'Krona+One' => 'Krona One', 'La+Belle+Aurore' => 'La Belle Aurore', 'Lancelot' => 'Lancelot', 'Lato' => 'Lato', 'League+Script' => 'League Script', 'Leckerli+One' => 'Leckerli One', 'Ledger' => 'Ledger', 'Lekton' => 'Lekton', 'Lemon' => 'Lemon', 'Libre+Baskerville' => 'Libre Baskerville', 'Life+Savers' => 'Life Savers', 'Lilita+One' => 'Lilita One', 'Limelight' => 'Limelight', 'Linden+Hill' => 'Linden Hill', 'Lobster' => 'Lobster', 'Lobster+Two' => 'Lobster Two', 'Londrina+Outline' => 'Londrina Outline', 'Londrina+Shadow' => 'Londrina Shadow', 'Londrina+Sketch' => 'Londrina Sketch', 'Londrina+Solid' => 'Londrina Solid', 'Lora' => 'Lora', 'Love+Ya+Like+A+Sister' => 'Love Ya Like A Sister', 'Loved+by+the+King' => 'Loved by the King', 'Lovers+Quarrel' => 'Lovers Quarrel', 'Luckiest+Guy' => 'Luckiest Guy', 'Lusitana' => 'Lusitana', 'Lustria' => 'Lustria', 'Macondo' => 'Macondo', 'Macondo+Swash+Caps' => 'Macondo Swash Caps', 'Magra' => 'Magra', 'Maiden+Orange' => 'Maiden Orange', 'Mako' => 'Mako', 'Marcellus' => 'Marcellus', 'Marcellus+SC' => 'Marcellus SC', 'Marck+Script' => 'Marck Script', 'Margarine' => 'Margarine', 'Marko+One' => 'Marko One', 'Marmelad' => 'Marmelad', 'Marvel' => 'Marvel', 'Mate' => 'Mate', 'Mate+SC' => 'Mate SC', 'Maven+Pro' => 'Maven Pro', 'McLaren' => 'McLaren', 'Meddon' => 'Meddon', 'MedievalSharp' => 'MedievalSharp', 'Medula+One' => 'Medula One', 'Megrim' => 'Megrim', 'Meie+Script' => 'Meie Script', 'Merienda' => 'Merienda', 'Merienda+One' => 'Merienda One', 'Merriweather' => 'Merriweather', 'Merriweather+Sans' => 'Merriweather Sans', 'Metal' => 'Metal', 'Metal+mania' => 'Metal Mania', 'Metamorphous' => 'Metamorphous', 'Metrophobic' => 'Metrophobic', 'Michroma' => 'Michroma', 'Milonga' => 'Milonga', 'Miltonian' => 'Miltonian', 'Miltonian+Tattoo' => 'Miltonian Tattoo', 'Miniver' => 'Miniver', 'Miss+Fajardose' => 'Miss Fajardose', 'Modern+Antiqua' => 'Modern Antiqua', 'Molengo' => 'Molengo', 'Molle' => 'Molle', 'Monda' => 'Monda', 'Monofett' => 'Monofett', 'Monoton' => 'Monoton', 'Monsieur+La+Doulaise' => 'Monsieur La Doulaise', 'Montaga' => 'Montaga', 'Montez' => 'Montez', 'Montserrat' => 'Montserrat', 'Montserrat+Alternates' => 'Montserrat Alternates', 'Montserrat+Subrayada' => 'Montserrat Subrayada', 'Moul' => 'Moul', 'Moulpali' => 'Moulpali', 'Mountains+of+Christmas' => 'Mountains of Christmas', 'Mouse+Memoirs' => 'Mouse Memoirs', 'Mr+Bedfort' => 'Mr Bedfort', 'Mr+Dafoe' => 'Mr Dafoe', 'Mr+De+Haviland' => 'Mr De Haviland', 'Mrs+Saint+Delafield' => 'Mrs Saint Delafield', 'Mrs+Sheppards' => 'Mrs Sheppards', 'Muli' => 'Muli', 'Mystery+Quest' => 'Mystery Quest', 'Neucha' => 'Neucha', 'Neuton' => 'Neuton', 'New+Rocker' => 'New Rocker', 'News+Cycle' => 'News Cycle', 'Niconne' => 'Niconne', 'Nixie+One' => 'Nixie One', 'Nobile' => 'Nobile', 'Nokora' => 'Nokora', 'Norican' => 'Norican', 'Nosifer' => 'Nosifer', 'Nothing+You+Could+Do' => 'Nothing You Could Do', 'Noticia+Text' => 'Noticia Text', 'Nova+Cut' => 'Nova Cut', 'Nova+Flat' => 'Nova Flat', 'Nova+Mono' => 'Nova Mono', 'Nova+Oval' => 'Nova Oval', 'Nova+Round' => 'Nova Round', 'Nova+Script' => 'Nova Script', 'Nova+Slim' => 'Nova Slim', 'Nova+Square' => 'Nova Square', 'Numans' => 'Numans', 'Nunito' => 'Nunito', 'Odor+Mean+Chey' => 'Odor Mean Chey', 'Offside' => 'Offside', 'Old+standard+tt' => 'Old Standard TT', 'Oldenburg' => 'Oldenburg', 'Oleo+Script' => 'Oleo Script', 'Oleo+Script+Swash+Caps' => 'Oleo Script Swash Caps', 'Open+Sans' => 'Open Sans', 'Open+Sans+Condensed' => 'Open Sans Condensed', 'Oranienbaum' => 'Oranienbaum', 'Orbitron' => 'Orbitron',  'Oregano' => 'Oregano', 'Orienta' => 'Orienta', 'Original+Surfer' => 'Original Surfer', 'Oswald' => 'Oswald', 'Over+the+Rainbow' => 'Over the Rainbow', 'Overlock' => 'Overlock', 'Overlock+SC' => 'Overlock SC', 'Ovo' => 'Ovo', 'Oxygen' => 'Oxygen', 'Oxygen+Mono' => 'Oxygen Mono', 'PT+Mono' => 'PT Mono', 'PT+Sans' => 'PT Sans', 'PT+Sans+Caption' => 'PT Sans Caption', 'PT+Sans+Narrow' => 'PT Sans Narrow', 'PT+Serif' => 'PT Serif', 'PT+Serif+Caption' => 'PT Serif Caption', 'Pacifico' => 'Pacifico', 'Paprika' => 'Paprika', 'Parisienne' => 'Parisienne', 'Passero+One' => 'Passero One', 'Passion+One' => 'Passion One', 'Patrick+Hand' => 'Patrick Hand', 'Patrick+Hand+SC' => 'Patrick Hand SC', 'Patua+One' => 'Patua One', 'Paytone+One' => 'Paytone One', 'Peralta' => 'Peralta', 'Permanent+Marker' => 'Permanent Marker', 'Petit+Formal+Script' => 'Petit Formal Script', 'Petrona' => 'Petrona', 'Philosopher' => 'Philosopher', 'Piedra' => 'Piedra', 'Pinyon+Script' => 'Pinyon Script', 'Pirata+One' => 'Pirata One', 'Plaster' => 'Plaster', 'Play' => 'Play', 'Playball' => 'Playball', 'Playfair+Display' => 'Playfair Display', 'Playfair+Display+SC' => 'Playfair Display SC', 'Podkova' => 'Podkova', 'Poiret+One' => 'Poiret One', 'Poller+One' => 'Poller One', 'Poly' => 'Poly', 'Pompiere' => 'Pompiere', 'Pontano+Sans' => 'Pontano Sans', 'Port+Lligat+Sans' => 'Port Lligat Sans', 'Port+Lligat+Slab' => 'Port Lligat Slab', 'Prata' => 'Prata', 'Preahvihear' => 'Preahvihear', 'Press+start+2P' => 'Press Start 2P', 'Princess+Sofia' => 'Princess Sofia', 'Prociono' => 'Prociono', 'Prosto+One' => 'Prosto One', 'Puritan' => 'Puritan', 'Purple+Purse' => 'Purple Purse', 'Quando' => 'Quando', 'Quantico' => 'Quantico', 'Quattrocento' => 'Quattrocento', 'Quattrocento+Sans' => 'Quattrocento Sans', 'Questrial' => 'Questrial', 'Quicksand' => 'Quicksand', 'Quintessential' => 'Quintessential', 'Qwigley' => 'Qwigley', 'Racing+sans+One' => 'Racing Sans One', 'Radley' => 'Radley', 'Raleway' => 'Raleway', 'Raleway+Dots' => 'Raleway Dots', 'Rambla' => 'Rambla', 'Rammetto+One' => 'Rammetto One', 'Ranchers' => 'Ranchers', 'Rancho' => 'Rancho', 'Rationale' => 'Rationale', 'Redressed' => 'Redressed', 'Reenie+Beanie' => 'Reenie Beanie', 'Revalia' => 'Revalia', 'Ribeye' => 'Ribeye', 'Ribeye+Marrow' => 'Ribeye Marrow', 'Righteous' => 'Righteous', 'Risque' => 'Risque', 'Roboto' => 'Roboto', 'Roboto+Condensed' => 'Roboto Condensed', 'Rochester' => 'Rochester', 'Rock+Salt' => 'Rock Salt', 'Rokkitt' => 'Rokkitt', 'Romanesco' => 'Romanesco', 'Ropa+Sans' => 'Ropa Sans', 'Rosario' => 'Rosario', 'Rosarivo' => 'Rosarivo', 'Rouge+Script' => 'Rouge Script', 'Ruda' => 'Ruda', 'Rufina' => 'Rufina', 'Ruge+Boogie' => 'Ruge Boogie', 'Ruluko' => 'Ruluko', 'Rum+Raisin' => 'Rum Raisin', 'Ruslan+Display' => 'Ruslan Display', 'Russo+One' => 'Russo One', 'Ruthie' => 'Ruthie', 'Rye' => 'Rye', 'Sacramento' => 'Sacramento', 'Sail' => 'Sail', 'Salsa' => 'Salsa', 'Sanchez' => 'Sanchez', 'Sancreek' => 'Sancreek', 'Sansita+One' => 'Sansita One', 'Sarina' => 'Sarina', 'Satisfy' => 'Satisfy', 'Scada' => 'Scada', 'Schoolbell' => 'Schoolbell', 'Seaweed+Script' => 'Seaweed Script', 'Sevillana' => 'Sevillana', 'Seymour+One' => 'Seymour One', 'Shadows+Into+Light' => 'Shadows Into Light', 'Shadows+Into+Light+Two' => 'Shadows Into Light Two', 'Shanti' => 'Shanti', 'Share' => 'Share', 'Share+Tech' => 'Share Tech', 'Share+Tech+Mono' => 'Share Tech Mono', 'Shojumaru' => 'Shojumaru',  'Short+Stack' => 'Short Stack', 'Siemreap' => 'Siemreap', 'Sigmar+One' => 'Sigmar One', 'Signika' => 'Signika', 'Signika+Negative' => 'Signika Negative', 'Simonetta' => 'Simonetta', 'Sintony' => 'Sintony', 'Sirin+Stencil' => 'Sirin Stencil', 'Six+Caps' => 'Six Caps', 'Skranji' => 'Skranji', 'Slackey' => 'Slackey', 'Smokum' => 'Smokum', 'Smythe' => 'Smythe', 'Sniglet' => 'Sniglet', 'Snippet' => 'Snippet', 'Snowburst+One' => 'Snowburst One', 'Sofadi+One' => 'Sofadi One', 'Sofia' => 'Sofia', 'Sonsie+One' => 'Sonsie One', 'Sorts+Mill+Goudy' => 'Sorts Mill Goudy', 'Source+Code+Pro' => 'Source Code Pro', 'Source+Sans+Pro' => 'Source Sans Pro', 'Special+Elite' => 'Special Elite', 'Spicy+Rice' => 'Spicy Rice', 'Spinnaker' => 'Spinnaker', 'Spirax' => 'Spirax', 'Squada+One' => 'Squada One', 'Stalemate' => 'Stalemate', 'Stalinist+One' => 'Stalinist One', 'Stardos+Stencil' => 'Stardos Stencil', 'Stint+Ultra+Condensed' => 'Stint Ultra Condensed', 'Stint+Ultra+Expanded' => 'Stint Ultra Expanded', 'Stoke' => 'Stoke', 'Strait' => 'Strait', 'Sue+Ellen+Francisco' => 'Sue Ellen Francisco', 'Sunshiney' => 'Sunshiney', 'Supermercado+One' => 'Supermercado One', 'Suwannaphum' => 'Suwannaphum', 'Swanky+and+Moo+Moo' => 'Swanky and Moo Moo',  'Syncopate' => 'Syncopate', 'Tangerine' => 'Tangerine', 'Taprom' => 'Taprom', 'Tauri' => 'Tauri', 'Telex' => 'Telex', 'Tenor+Sans' => 'Tenor Sans', 'Text+Me+One' => 'Text Me One', 'The+Girl+Next+Door' => 'The Girl Next Door', 'Tienne' => 'Tienne', 'Tinos' => 'Tinos', 'Titan+One' => 'Titan One', 'Titillium+Web' => 'Titillium Web', 'Trade+Winds' => 'Trade Winds', 'Trocchi' => 'Trocchi', 'Trochut' => 'Trochut', 'Trykker' => 'Trykker', 'Tulpen+One' => 'Tulpen One', 'Ubuntu' => 'Ubuntu', 'Ubuntu+Condensed' => 'Ubuntu Condensed', 'Ubuntu+Mono' => 'Ubuntu Mono', 'Ultra' => 'Ultra', 'Uncial+Antiqua' => 'Uncial Antiqua', 'Underdog' => 'Underdog', 'Unica+One' => 'Unica One', 'UnifrakturCook' => 'UnifrakturCook', 'UnifrakturMaguntia' => 'UnifrakturMaguntia', 'Unkempt' => 'Unkempt', 'Unna' => 'Unna', 'VT323' => 'VT323', 'Vampiro+One' => 'Vampiro One', 'Varela' => 'Varela', 'Varela+Round' => 'Varela Round', 'Vast+Shadow' => 'Vast Shadow', 'Vibur' => 'Vibur', 'Vidaloka' => 'Vidaloka', 'Viga' => 'Viga', 'Voces' => 'Voces', 'Volkhov' => 'Volkhov', 'Vollkorn' => 'Vollkorn',  'Voltaire' => 'Voltaire', 'Waiting+for+the+sunrise' => 'Waiting for the Sunrise', 'Wallpoet' => 'Wallpoet', 'Walter+Turncoat' => 'Walter Turncoat', 'Warnes' => 'Warnes', 'Wellfleet' => 'Wellfleet', 'Wendy+One' => 'Wendy One', 'Wire+One' => 'Wire One', 'Yanone+Kaffeesatz' => 'Yanone Kaffeesatz', 'Yellowtail' => 'Yellowtail', 'Yeseva+One' => 'Yeseva One', 'Yesteryear' => 'Yesteryear', 'Zeyada' => 'Zeyada');
+    $font_families = WDW_S_Library::get_font_families();
+    $google_fonts = WDW_S_Library::get_google_fonts();
+
     $font_weights = array(
       'lighter' => 'Lighter',
       'normal' => 'Normal',
@@ -425,6 +431,11 @@ class WDSViewSliders_wds {
       'onSliderR' => 'On slider resize',
       'onSwipeS' => 'On swipe start',
     );
+     $text_alignments = array(
+      'center' => 'Center',
+      'left' => 'Left',
+      'right' => 'Right',
+    );
     $built_in_watermark_fonts = array();
     foreach (scandir(path_join(WD_S_DIR, 'fonts')) as $filename) {
       if (strpos($filename, '.') === 0) {
@@ -448,12 +459,10 @@ class WDSViewSliders_wds {
       $fv_message = '';
       $fv_title = '';
     }
-    ?>
+    global $wp_version;
+    if (version_compare($wp_version, '4','<')) {
+      ?>
     <style>
-    <?php   
-      global $wp_version;
-      if (version_compare($wp_version, '4','<')) {
-    ?>
       #wpwrap {
         background-color:#F1F1F1
       }
@@ -515,55 +524,40 @@ class WDSViewSliders_wds {
         }
 
       }
-    <?php
-      }
-    ?>
     </style>
+      <?php
+    }
+    ?>
     <div class="spider_message_cont"></div>
     <div class="spider_load">
       <div class="spider_load_cont"></div>
-      <div class="spider_load_icon"><img class="spider_ajax_loading" src="<?php echo WD_S_URL . '/images/ajax_loader.gif'; ?>"></div>
+      <div class="spider_load_icon"><img class="spider_ajax_loading" src="<?php echo WD_S_URL . '/images/ajax_loader_back.gif'; ?>"></div>
     </div>
-    <div style="clear: both; float: left; width: 99%;">
-      <div style="float: left; font-size: 14px; font-weight: bold;">
-        This section allows you to add/edit slider.
-        <a style="color: blue; text-decoration: none;" target="_blank" href="https://web-dorado.com/wordpress-slider-wd/adding-images.html">Read More in User Manual</a>
-      </div>
-      <div style="float: right; text-align: right;">
-        <a style="text-decoration: none;" target="_blank" href="https://web-dorado.com/files/fromslider.php">
-          <img width="215" border="0" alt="web-dorado.com" src="<?php echo WD_S_URL . '/images/wd_logo.png'; ?>" />
-        </a>
-      </div>
-    </div>
-    <form class="wrap wds_form" method="post" id="sliders_form" action="admin.php?page=sliders_wds" style="float: left; width: 99%;">
+    <form class="wrap wds_form" method="post" id="sliders_form" action="admin.php?page=sliders_wds" style="float: left; width: 98%;">
       <?php wp_nonce_field('nonce_wd', 'nonce_wd'); ?>
       <span class="slider-icon"></span>
-      <h2><?php echo $page_title; ?></h2>
+      <h2 class="wds_default"><?php echo $page_title; ?></h2>
       <div class="buttons_conteiner">
         <div class="slider_title_conteiner">
-          <span class="spider_label"><label for="name"><?php _e('Slider Title:','wds_back'); ?> <span style="color:#FF0000;">*</span> </label></span>
-          <span><input type="text" id="name" name="name" value="<?php echo $row->name; ?>" size="20" /></span>
+          <span class="spider_label"><label for="name"><?php _e('Slider Title', 'wds_back'); ?> <span style="color:#FF0000;">*</span> </label></span>
+          <span><input type="text" id="name" name="name" value="<?php echo $row->name; ?>" size="20" class="wds_requried" data-name="<?php _e('Slider title', 'wds_back'); ?>" /></span>
         </div>
         <div class="wds_buttons">
           <div class="wds_button_wrap">
-            <input class="wds_button-secondary wds_save_slider" type="button" onclick="if (wds_check_required('name', 'Name')) {return false;};
-                                         spider_set_input_value('task', 'save');
-                                         spider_ajax_save('sliders_form', event);" value="Save" />
+            <input class="wds_button-secondary wds_save_slider" type="button" onclick="spider_set_input_value('task', 'save'); spider_ajax_save('sliders_form', event);" value="Save" />
           </div>														 
           <div class="wds_button_wrap">														 
-            <input class="wds_button-secondary wds_aplly_slider" type="button" onclick="if (wds_check_required('name', 'Name')) {return false;};
-                                                                         spider_set_input_value('task', 'apply');
-                                                                         spider_ajax_save('sliders_form', event);" value="Apply" />
+            <input class="wds_button-secondary wds_apply_slider" type="button" onclick="spider_set_input_value('task', 'apply'); spider_ajax_save('sliders_form', event);" value="Apply" />
           </div>
           <div class="wds_button_wrap">	
-				<input class="wds_button-secondary wds_dublicate_slide" type="button" onclick="if (wds_check_required('name', 'Name')) {return false;};
-                                                                 spider_set_input_value('task', 'duplicate');
-                                                                 spider_set_input_value('sub_tab', '');
-                                                                 spider_ajax_save('sliders_form', event);" value="Save as Copy" />
-			</div>
-			<div class="wds_button_wrap">	
-            <input id="wds_preview" type="button" class="action_buttons" value="Preview"
-                     onclick="if (wds_check_required('name', 'Name')) { return false;}; spider_set_input_value('task', 'preview'); spider_ajax_save('sliders_form', event); return false;" />
+            <input class="wds_button-secondary wds_dublicate_slide" type="button" onclick="if (!wds_check_required()) {return false;};
+                                                                                          spider_set_input_value('current_id', '0' );
+                                                                                          spider_set_input_value('save_as_copy', '1');
+                                                                                          spider_set_input_value('task', 'apply');
+                                                                                          spider_ajax_save('sliders_form', event);" value="Save as Copy" />
+          </div>
+          <div class="wds_button_wrap">	
+            <input id="wds_preview" type="button" class="action_buttons" value="Preview" onclick="spider_set_input_value('task', 'preview'); spider_ajax_save('sliders_form', event); return false;" />
           </div>	
           <div class="wds_button_wrap">
             <input type="button" class="wds_button-secondary wds_export_one" onclick="alert('This functionality is disabled in free version.')" value="Export" />
@@ -576,9 +570,7 @@ class WDSViewSliders_wds {
       </div>
       <div>
         <div class="wds_reset_button">
-          <input class="reset_settings" type="button" onclick="if (wds_check_required('name', 'Name')) {return false;};
-                                                                   spider_set_input_value('task', 'reset');
-                                                                   spider_ajax_save('sliders_form', event);" value="Reset Settings" />
+          <input class="reset_settings" type="button" onclick="spider_set_input_value('task', 'reset'); spider_ajax_save('sliders_form', event);" value="Reset Settings" />
         </div>
         <!--------------Settings tab----------->
         <div class="wds_box wds_settings_box">
@@ -602,7 +594,7 @@ class WDSViewSliders_wds {
 								</td>
 							</tr>
 						</thead>
-				</table>
+          </table>
           <div class="wds_nav_tabs">
 							<div class="wds_menu_icon" onclick="jQuery('.wds_nav_tabs ul').slideToggle(500);"></div>
             <ul>
@@ -648,12 +640,26 @@ class WDSViewSliders_wds {
                     </td>
                   </tr>
                   <tr>
+                    <td class="spider_label"><label for="hide_on_mobile">Hide on small screens: </label></td>
+                    <td>
+                      <input type="text" id="hide_on_mobile" name="hide_on_mobile" value="<?php echo $row->hide_on_mobile; ?>" class="spider_int_input" onkeypress="return spider_check_isnum(event)" /> px
+                      <div class="spider_description">Hide slider when resolution is smaller than.</div>
+                    </td>
+                  </tr>
+                  <tr>
                     <td class="spider_label"><label>Full width: </label></td>
                     <td>
                       <input type="radio" id="full_width1" name="full_width" <?php echo (($row->full_width) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->full_width) ? 'class="selected_color"' : ''); ?> for="full_width1">Yes</label>
                       <input type="radio" id="full_width0" name="full_width" <?php echo (($row->full_width) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo ($row->full_width) ? '' : 'class="selected_color"'; ?> for="full_width0">No</label>
                       <input type="text" name="ratio" id="ratio" value="" class="spider_int_input" onchange="wds_whr('ratio')" onkeypress="return spider_check_isnum(event)" /><label for="ratio">Ratio</label>
                       <div class="spider_description">The image will stretch to the page width, taking the height based on dimensions ratio.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="spider_label"><label for="full_width_for_mobile">Full width on small screens: </label></td>
+                    <td>
+                      <input type="text" id="full_width_for_mobile" name="full_width_for_mobile" value="<?php echo $row->full_width_for_mobile; ?>" class="spider_int_input" onkeypress="return spider_check_isnum(event)" /> px
+                      <div class="spider_description">Full width slider when resolution is smaller than.</div>
                     </td>
                   </tr>
                   <tr>
@@ -668,7 +674,7 @@ class WDSViewSliders_wds {
                     <td class="spider_label"><label>Smart Crop</label></td>
                     <td>
                       <input onClick="bwg_enable_disable('', 'tr_crop_pos', 'smart_crop1')" type="radio" id="smart_crop1" name="smart_crop" <?php echo (($row->smart_crop) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->smart_crop) ? 'class="selected_color"' : ''); ?> for="smart_crop1">Yes</label>
-                      <input onClick="bwg_enable_disable('none', 'tr_crop_pos', 'smart_crop0')" type="radio" id="smart_crop0" name="smart_crop" <?php echo (($row->smart_crop) ? '' : 'checked="checked"'); ?> value="0" /><label for="smart_crop0">No</label>
+                      <input onClick="bwg_enable_disable('none', 'tr_crop_pos', 'smart_crop0')" type="radio" id="smart_crop0" name="smart_crop" <?php echo (($row->smart_crop) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo ((!$row->smart_crop) ? 'class="selected_color"' : ''); ?> for="smart_crop0">No</label>
                       <div class="spider_description"></div>
                     </td>
                   </tr>
@@ -701,8 +707,16 @@ class WDSViewSliders_wds {
                   <tr>
                     <td class="spider_label"><label>Fixed background: </label></td>
                     <td>
-                      <input type="radio" id="fixed_bg1" name="fixed_bg" <?php echo (($row->fixed_bg) ? 'checked="checked"' : ''); ?> value="1" /><label for="fixed_bg1">Yes</label>
-                      <input type="radio" id="fixed_bg0" name="fixed_bg" <?php echo (($row->fixed_bg) ? '' : 'checked="checked"'); ?> value="0" /><label for="fixed_bg0">No</label>
+                      <input type="radio" id="fixed_bg1" name="fixed_bg" <?php echo (($row->fixed_bg) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->fixed_bg) ? 'class="selected_color"' : ''); ?> for="fixed_bg1">Yes</label>
+                      <input type="radio" id="fixed_bg0" name="fixed_bg" <?php echo (($row->fixed_bg) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo ((!$row->fixed_bg) ? 'class="selected_color"' : ''); ?> for="fixed_bg0">No</label>
+                      <div class="spider_description"></div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="spider_label"><label>Slides order direction: </label></td>
+                    <td>
+                      <input type="radio" id="order_dir1" name="order_dir" <?php echo checked('asc', $row->order_dir); ?> value="asc" /><label <?php echo (($row->order_dir == 'asc') ? 'class="selected_color"' : ''); ?> for="order_dir1">Ascending</label>
+                      <input type="radio" id="order_dir0" name="order_dir" <?php checked('desc', $row->order_dir); ?> value="desc" /><label <?php echo (($row->order_dir == 'desc') ? 'class="selected_color"' : ''); ?> for="order_dir0">Descending</label>
                       <div class="spider_description"></div>
                     </td>
                   </tr>
@@ -747,7 +761,7 @@ class WDSViewSliders_wds {
                   </tr>
                   <tr>
                     <td class="spider_label spider_free_version_label"><label>Parallax Effect: </label></td>
-                    <td>
+                    <td title="This option is disabled in free version.">
                       <input disabled="disabled" type="radio" id="parallax_effect1" name="parallax_effect" <?php echo (($row->parallax_effect) ? 'checked="checked"' : ''); ?> value="1" /><label for="parallax_effect1">Yes</label>
                       <input disabled="disabled" type="radio" id="parallax_effect0" name="parallax_effect" <?php echo (($row->parallax_effect) ? '' : 'checked="checked"'); ?> value="0" /><label for="parallax_effect0">No</label>
                       <div class="spider_description">The direction of the movement, as well as the layer moving pace depend on the z-index value.</div>
@@ -759,6 +773,22 @@ class WDSViewSliders_wds {
                       <input type="radio" id="autoplay1" name="autoplay" <?php echo (($row->autoplay) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->autoplay) ? 'class="selected_color"' : ''); ?> for="autoplay1">Yes</label>
                       <input type="radio" id="autoplay0" name="autoplay" <?php echo (($row->autoplay) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo (($row->autoplay) ? '' : 'class="selected_color"'); ?> for="autoplay0">No</label>
                       <div class="spider_description">Choose whether to autoplay the sliders or not.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="spider_label"><label>Two way slideshow: </label></td>
+                    <td>
+                      <input type="radio" id="twoway_slideshow1" name="twoway_slideshow" <?php echo (($row->twoway_slideshow) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->twoway_slideshow) ? 'class="selected_color"' : ''); ?> for="twoway_slideshow1">Yes</label>
+                      <input type="radio" id="twoway_slideshow0" name="twoway_slideshow" <?php echo (($row->twoway_slideshow) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo (($row->twoway_slideshow) ? '' : 'class="selected_color"'); ?> for="twoway_slideshow0">No</label>
+                      <div class="spider_description">Slideshow can go backwards if someone switch to a previous slide.</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="spider_label"><label>Enable loop: </label></td>
+                    <td>
+                      <input type="radio" id="slider_loop1" name="slider_loop" <?php echo (($row->slider_loop) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->slider_loop) ? 'class="selected_color"' : ''); ?> for="slider_loop1">Yes</label>
+                      <input type="radio" id="slider_loop0" name="slider_loop" <?php echo (($row->slider_loop) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo (($row->slider_loop) ? '' : 'class="selected_color"'); ?> for="slider_loop0">No</label>
+                      <div class="spider_description"></div>
                     </td>
                   </tr>
                   <tr>
@@ -805,7 +835,7 @@ class WDSViewSliders_wds {
                     </td>
                     <td>
                       <input type="text" id="music_url" name="music_url" size="39" value="<?php echo $row->music_url; ?>" style="display:inline-block;" />
-                      <input id="add_music_url" class="button-primary" type="button" onclick="spider_media_uploader('music', event, false); return false;" value="Add music" />
+                      <input id="add_music_url" class="wds_not_image_buttons" type="button" onclick="spider_media_uploader('music', event, false); return false;" value="Add music" />
                       <div class="spider_description">Only .aac,.m4a,.f4a,.mp3,.ogg,.oga formats are supported.</div>
                     </td>
                   </tr>
@@ -884,22 +914,6 @@ class WDSViewSliders_wds {
                     </td>
                   </tr>
                   <tr>
-                    <td class="spider_label"><label>Turn SliderWD Media Upload: </label></td>
-                    <td>
-                      <input type="radio" id="spider_uploader1" name="spider_uploader" <?php echo (($row->spider_uploader) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->spider_uploader) ? 'class="selected_color"' : ''); ?> for="spider_uploader1">Yes</label>
-                      <input type="radio" id="spider_uploader0" name="spider_uploader" <?php echo (($row->spider_uploader) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo (($row->spider_uploader) ? '' : 'class="selected_color"'); ?> for="spider_uploader0">No</label>
-                      <div class="spider_description">Choose the option to use the custom media upload instead of the WordPress default for adding images.</div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="spider_label"><label for="possib_add_ffamily_input">Add font-family: </label></td>
-                    <td>
-                      <input type="text" id="possib_add_ffamily_input" value="" class="spider_box_input" onchange="set_ffamily_value(jQuery(this).val())" />
-                      <input type="hidden" id="possib_add_ffamily" name="possib_add_ffamily" value="<?php echo $row->possib_add_ffamily; ?>" /> 
-                      <div class="spider_description">The added font family will appear in the drop-down list of fonts.</div>
-                    </td>
-                  </tr>
-                  <tr>
                     <td class="spider_label"><label>Published: </label></td>
                     <td>
                       <input type="radio" id="published1" name="published" <?php echo (($row->published) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->published) ? 'class="selected_color"' : ''); ?> for="published1">Yes</label>
@@ -957,7 +971,7 @@ class WDSViewSliders_wds {
                       <div class="spider_description"></div>
                     </td>
                   </tr>
-                   <tr>
+                  <tr>
                     <td class="spider_label"><label for="carousel_degree">Background image angle: </label></td>
                     <td>
                       <input type="text" id="carousel_degree" name="carousel_degree" value="<?php echo $row->carousel_degree; ?>" class="spider_int_input" onkeypress="return spider_check_isnum(event)" /> deg
@@ -1014,8 +1028,7 @@ class WDSViewSliders_wds {
                       <div class="spider_description"></div>
                     </td>
                   </tr>
-                   <tr>
-                   <tr>
+                  <tr>
                     <td class="spider_label_options">
                       <label>Mouse wheel navigation: </label>
                     </td>
@@ -1025,7 +1038,7 @@ class WDSViewSliders_wds {
                       <div class="spider_description"></div>
                     </td>
                   </tr>
-                   <tr>
+                  <tr>
                     <td class="spider_label_options">
                       <label>Keyboard navigation: </label>
                     </td>
@@ -1059,7 +1072,7 @@ class WDSViewSliders_wds {
                       <input type="hidden" id="left_butt_hov_url" name="left_butt_hov_url" value="<?php echo $row->left_butt_hov_url; ?>" />
                       <div class="spider_description">Choose whether to use default navigation buttons or to upload custom ones.</div>
                     </td>
-                  </tr>	
+                  </tr>
                 </tbody>
                 <tbody class="<?php echo $fv_class; ?>"<?php echo $fv_title; ?>>
                   <?php echo $fv_message; ?>
@@ -1093,12 +1106,12 @@ class WDSViewSliders_wds {
                     <td>
                       <div style="display: table;">
                         <div style="display: table-cell; vertical-align: middle;" class="display_block">
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Previous Button" onclick="alert('This functionality is disabled in free version.')" />
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Previous Button Hover" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Previous Button" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Previous Button Hover" onclick="alert('This functionality is disabled in free version.')" />
                         </div>
                         <div style="display: table-cell; vertical-align: middle;" class="display_block">
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Next Button" onclick="alert('This functionality is disabled in free version.')" />
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Next Button Hover" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Next Button" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Next Button Hover" onclick="alert('This functionality is disabled in free version.')" />
                         </div>
                         <div style="width:100px; display: table-cell; vertical-align: middle; text-align: center;background-color: rgba(229, 229, 229, 0.62); padding-top: 4px; border-radius: 3px;" class="display_block">
                           <img id="left_butt_img" src="<?php echo $row->left_butt_url; ?>" style="display:inline-block; width: 40px; height: 40px;" />
@@ -1107,7 +1120,7 @@ class WDSViewSliders_wds {
                           <img id="right_butt_hov_img" src="<?php echo $row->right_butt_hov_url; ?>" style="display:inline-block; width: 40px; height: 40px;" />
                         </div>
                         <div style="display: table-cell; text-align: center; vertical-align: middle;" class="display_block wds_reverse_cont">
-                          <input type="button" class="button button-small wds_reverse" onclick="wds_change_custom_src()" value="Reverse" />
+                          <input type="button" class="wds_reverse_buttons button-small wds_reverse" onclick="wds_change_custom_src()" value="Reverse" />
                         </div>
                       </div>
                     </td>
@@ -1224,7 +1237,7 @@ class WDSViewSliders_wds {
                           </div>
                         </div>
                         <div style="display: table-cell; text-align: center; vertical-align: middle;">
-                          <input type="button" class="button button-small wds_reverse" onclick="change_src()" value="Reverse" />
+                          <input type="button" class="wds_reverse_buttons button-small wds_reverse" onclick="change_src()" value="Reverse" />
                         </div>
                       </div>
                       <div class="spider_description">Choose the type and color for navigation button images. The option is designed for limited preview (colors not included) purposes and can't be saved.</div>
@@ -1282,12 +1295,12 @@ class WDSViewSliders_wds {
                     <td>
                       <div style="display: table;">
                         <div style="display: table-cell; vertical-align: middle;" class="display_block">
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Play Button" onclick="alert('This functionality is disabled in free version.')" />
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Play Button Hover" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Play Button" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Play Button Hover" onclick="alert('This functionality is disabled in free version.')" />
                         </div>
                         <div style="display: table-cell; vertical-align: middle;" class="display_block">
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Pause Button" onclick="alert('This functionality is disabled in free version.')" />
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Pause Button Hover" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Pause Button" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_nav_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Pause Button Hover" onclick="alert('This functionality is disabled in free version.')" />
                         </div>
                         <div style="width:100px; display: table-cell; vertical-align: middle; text-align: center;background-color: rgba(229, 229, 229, 0.62); padding-top: 4px; border-radius: 3px;">
                           <img id="play_butt_img" src="<?php echo $row->play_butt_url; ?>" style="display:inline-block; width: 40px; height: 40px;" />
@@ -1296,7 +1309,7 @@ class WDSViewSliders_wds {
                           <img id="paus_butt_hov_img" src="<?php echo $row->paus_butt_hov_url; ?>" style="display:inline-block; width: 40px; height: 40px;" />
                         </div>
                         <div style="display: table-cell; text-align: center; vertical-align: middle;" class="display_block wds_reverse_cont">
-                          <input type="button" class="button button-small wds_reverse" onclick="wds_change_play_paus_custom_src()" value="Reverse" />
+                          <input type="button" class="wds_reverse_buttons button-small wds_reverse" onclick="wds_change_play_paus_custom_src()" value="Reverse" />
                         </div>
                       </div>
                     </td>
@@ -1413,7 +1426,7 @@ class WDSViewSliders_wds {
                             </div>
                           </div>
                           <div style="display: table-cell; text-align: center; vertical-align: middle;">
-                            <input type="button" class="button button-small wds_reverse" onclick="change_play_paus_src()" value="Reverse" />
+                            <input type="button" class="wds_reverse_buttons button-small wds_reverse" onclick="change_play_paus_src()" value="Reverse" />
                           </div>
                         </div>
                       <div class="spider_description">Choose the type and color for navigation button images. The option is designed for limited preview (colors not included) purposes and can't be saved.</div>
@@ -1626,24 +1639,24 @@ class WDSViewSliders_wds {
                     <td>
                       <div style="display: table;">
                         <div style="display: table-cell; vertical-align: middle;">
-                          <input class="button-secondary wds_ctrl_btn_upload wds_free_button" type="button" value="Active Button" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_bull_buttons wds_ctrl_btn_upload wds_free_button" type="button" value="Active Button" onclick="alert('This functionality is disabled in free version.')" />
                         </div>
                         <div style="display: table-cell; vertical-align: middle;">
-                          <input class="button-secondary wds_free_button" type="button" value="Deactive Button" onclick="alert('This functionality is disabled in free version.')" />
+                          <input class="wds_bull_buttons wds_free_button" type="button" value="Deactive Button" onclick="alert('This functionality is disabled in free version.')" />
                         </div>  
                         <div style="width:100px; display: table-cell; vertical-align: middle; text-align: center;background-color: rgba(229, 229, 229, 0.62); padding-top: 4px; border-radius: 3px;">
                           <img id="bull_img_main" src="<?php echo $row->bullets_img_main_url; ?>" style="display:inline-block; width: 40px; height: 40px;" />
                           <img id="bull_img_hov" src="<?php echo $row->bullets_img_hov_url; ?>" style="display:inline-block; width: 40px; height: 40px;" /> 
                         </div>
                         <div style="display: table-cell; text-align: center; vertical-align: middle;">
-                          <input type="button" class="button button-small wds_reverse" onclick="wds_change_bullets_custom_src()" value="Reverse" />
+                          <input type="button" class="wds_reverse_buttons button-small wds_reverse" onclick="wds_change_bullets_custom_src()" value="Reverse" />
                         </div>
                       </div>
                     </td>
                   </tr>
                   <tr id="bullets_images_select">
                     <td class="spider_label_options" style="vertical-align: middle;">
-                      <label for="bullets_images_url">Chooes buttons: </label>
+                      <label for="bullets_images_url">Choose buttons: </label>
                     </td>
                     <td style="display: block;">
                       <div style="display: table; margin-bottom: 14px;">
@@ -1693,7 +1706,7 @@ class WDSViewSliders_wds {
                           </div>
                         </div>						
                         <div style="display: table-cell; text-align: center; vertical-align: middle;">
-                          <input type="button" class="button button-small wds_reverse" onclick="change_bullets_src()" value="Reverse" />
+                          <input type="button" class="wds_reverse_buttons button-small wds_reverse" onclick="change_bullets_src()" value="Reverse" />
                         </div>
                       </div>
                       <div class="spider_description">Choose the type and color for the bullets. The option is designed for limited preview (colors not included) purposes and can't be saved.</div>
@@ -1834,8 +1847,8 @@ class WDSViewSliders_wds {
                   <tr>
                     <td class="spider_label"><label>Enable timer bar: </label></td>
                     <td>
-                      <input type="radio" id="enable_time_bar1" name="enable_time_bar" <?php echo (($row->enable_time_bar) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->enable_time_bar) ? 'class="selected_color"' : ''); ?> for="time_bar1">Yes</label>
-                      <input type="radio" id="enable_time_bar0" name="enable_time_bar" <?php echo (($row->enable_time_bar) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo (($row->enable_time_bar) ? '' : 'class="selected_color"'); ?> for="time_bar0">No</label>
+                      <input type="radio" id="enable_time_bar1" name="enable_time_bar" <?php echo (($row->enable_time_bar) ? 'checked="checked"' : ''); ?> value="1" /><label <?php echo (($row->enable_time_bar) ? 'class="selected_color"' : ''); ?> for="enable_time_bar1">Yes</label>
+                      <input type="radio" id="enable_time_bar0" name="enable_time_bar" <?php echo (($row->enable_time_bar) ? '' : 'checked="checked"'); ?> value="0" /><label <?php echo (($row->enable_time_bar) ? '' : 'class="selected_color"'); ?> for="enable_time_bar0">No</label>
                       <div class="spider_description">You can add a bar displaying the timing left to switching to the next slide on autoplay.</div>
                     </td>
                   </tr>
@@ -1906,14 +1919,14 @@ class WDSViewSliders_wds {
                             <td>
                               <input type="text" id="built_in_watermark_url" name="built_in_watermark_url" style="width: 68%;" value="<?php echo $row->built_in_watermark_url; ?>" style="display:inline-block;" onchange="preview_built_in_watermark()" />
                               <?php
-                              if (!$row->spider_uploader) {
+                              if (!$spider_uploader) {
                                 ?>
-                              <input id="wat_img_add_butt" class="button-primary" type="button" onclick="spider_media_uploader('watermark', event, false); return false;" value="Add Image" />
+                              <input id="wat_img_add_butt" class="wds_not_image_buttons" type="button" onclick="spider_media_uploader('watermark', event, false); return false;" value="Add Image" />
                                 <?php
                               }
                               else {
                                 ?>
-                              <a href="<?php echo add_query_arg(array('callback' => 'wds_add_image', 'image_for' => 'watermark', 'TB_iframe' => '1'), $query_url); ?>" class="button-primary thickbox thickbox-preview" title="Add Image" onclick="return false;">
+                              <a href="<?php echo add_query_arg(array('callback' => 'wds_add_image', 'image_for' => 'watermark', 'TB_iframe' => '1'), $query_url); ?>" class="wds_not_image_buttons thickbox thickbox-preview" title="Add Image" onclick="return false;">
                                 Add Image
                               </a>
                                 <?php
@@ -2106,7 +2119,7 @@ class WDSViewSliders_wds {
                   </div>
                   <div class="wds_buttons">
                     <?php
-                    if ($row->spider_uploader) {
+                    if ($spider_uploader) {
                       ?>
 										<div class="wds_button_wrap"> 
 											<a href="<?php echo add_query_arg(array('callback' => 'wds_add_image', 'image_for' => 'add_slides', 'TB_iframe' => '1'), $query_url); ?>" class="wds_buttons_320 action_buttons thickbox thickbox-preview add_images" title="Add Images" onclick="return false;">
@@ -2118,25 +2131,20 @@ class WDSViewSliders_wds {
                     else {
                       ?>
 										<div class="wds_button_wrap">
-                    <input type="button" class="action_buttons add_images" id="button_image_url" onclick="spider_media_uploader('button_image_url', event, true); return false;" value="Add Images" />
+                      <input type="button" class="action_buttons add_images" id="button_image_url" onclick="spider_media_uploader('button_image_url', event, true); return false;" value="Add Images" />
 										</div>
                       <?php
                     }
                     ?>
 										<div class="wds_button_wrap">
-		    <input class="wds_buttons_320 action_buttons add_posts wds_free_button" type="button" value="Add Posts" onclick="alert('This functionality is disabled in free version.')" />
-</div>
+                      <input class="wds_buttons_320 action_buttons add_posts wds_free_button" type="button" value="Add Posts" onclick="alert('This functionality is disabled in free version.')" />
+                    </div>
 										<div class="wds_button_wrap">
-											<input class="wds_buttons_320 action_buttons set_watermark"  type="button" onclick="if (wds_check_required('name', 'Name')) {return false;};
-																																						 spider_set_input_value('task', 'set_watermark');
-                                                                           spider_ajax_save('sliders_form', event);" value="Set Watermark" />
-                                                                           </div>
-                                                                           										<div class="wds_button_wrap">
-											<input class="wds_buttons_320 action_buttons reset_watermark"  type="button" onclick="if (wds_check_required('name', 'Name')) {return false;};
-                                                                           spider_set_input_value('task', 'reset_watermark');
-                                                                           spider_ajax_save('sliders_form', event);" value="Reset Watermark" />
-                                                                           </div>
-
+											<input class="wds_buttons_320 action_buttons set_watermark"  type="button" onclick="spider_set_input_value('task', 'set_watermark'); spider_ajax_save('sliders_form', event);" value="Set Watermark" />
+                    </div>
+                    <div class="wds_button_wrap">
+											<input class="wds_buttons_320 action_buttons reset_watermark"  type="button" onclick="spider_set_input_value('task', 'reset_watermark'); spider_ajax_save('sliders_form', event);" value="Reset Watermark" />
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -2145,7 +2153,7 @@ class WDSViewSliders_wds {
               <tr style="display: block;">
                 <td colspan="4" style="display: block;">
                   <div class="bgcolor wds_tabs wbs_subtab aui-sortable">
-                  <h2 class="titles">Slides<h2>
+                  <h2 class="titles">Slides</h2>
                     <?php
                     foreach ($slides_row as $key => $slide_row) {
                       ?>
@@ -2165,7 +2173,7 @@ class WDSViewSliders_wds {
 											</script>
                     <div id="wds_subtab_wrap<?php echo $slide_row->id; ?>" class="wds_subtab_wrap connectedSortable"> 
                       <div id="wbs_subtab<?php echo $slide_row->id; ?>" class="tab_link  <?php echo (((($id == 0 || !$sub_tab_type) || (strpos($sub_tab_type, 'pr') !== FALSE)) && $key == 0) || ('slide' . $slide_row->id == $sub_tab_type)) ? 'wds_sub_active' : ''; ?>" href="#" >
-                        <div style="background-image:url('<?php echo $slide_row->type != 'image' ? ($slide_row->type == 'video' && ctype_digit($slide_row->thumb_url) ? (wp_get_attachment_url(get_post_thumbnail_id($slide_row->thumb_url)) ? wp_get_attachment_url(get_post_thumbnail_id($slide_row->thumb_url)) : WD_S_URL . '/images/no-video.png') : $slide_row->thumb_url) : $slide_row->thumb_url ?>');background-position: center" class="tab_image" id="wds_tab_image<?php echo $slide_row->id; ?>" >
+                        <div style='background-image:url("<?php echo $slide_row->type != 'image' ? ($slide_row->type == 'video' && ctype_digit($slide_row->thumb_url) ? (wp_get_attachment_url(get_post_thumbnail_id($slide_row->thumb_url)) ? wp_get_attachment_url(get_post_thumbnail_id($slide_row->thumb_url)) : WD_S_URL . '/images/no-video.png') : $slide_row->thumb_url) : $slide_row->thumb_url ?>");background-position: center' class="tab_image" id="wds_tab_image<?php echo $slide_row->id; ?>" >
                           <div class="tab_buttons">
 														<div class="handle_wrap">
 															<div class="handle" title="Drag to re-order"></div>
@@ -2178,7 +2186,7 @@ class WDSViewSliders_wds {
                           <div class="overlay" >
                              <div id="hover_buttons">
                             <?php
-                            if ($row->spider_uploader) {
+                            if ($spider_uploader) {
                               ?>
                               <a href="<?php echo add_query_arg(array('callback' => 'wds_add_image', 'image_for' => 'add_update_slide','slide_id' => $slide_row->id, 'TB_iframe' => '1'), $query_url); ?>" class="wds_change_thumbnail thickbox thickbox-preview" title="Add/Edit Image"  onclick="return false;">
                               </a>
@@ -2203,8 +2211,7 @@ class WDSViewSliders_wds {
                     }
                     ?>
                     <div class="wds_subtab_wrap new_tab_image"> 
-                      <div class="new_tab_link" onclick="wds_add_slide()">
-                      </div>
+                      <div class="new_tab_link" onclick="wds_add_slide()"></div>
                     </div>
                     <div class="wds_clear"></div>
                   </div>
@@ -2216,13 +2223,12 @@ class WDSViewSliders_wds {
                       <thead><tr><td colspan="4">&nbsp;</td></tr></thead>
                       <tbody>
                         <input type="hidden" name="type<?php echo $slide_row->id; ?>" id="type<?php echo $slide_row->id; ?>" value="<?php echo $slide_row->type; ?>" />
-                        
                         <tr class="bgcolor">
                           <td colspan="4">
-                            <h2 class="titles">Edit Slides</h2>
+                            <h2 class="titles">Edit Slide</h2>
                             <div id="slide_add_buttons">
                             <?php
-                            if (!$row->spider_uploader) {
+                            if (!$spider_uploader) {
                               ?>
                               <div class="slide_add_buttons_wrap">		
                                 <input type="button" class="action_buttons edit_slide" id="button_image_url<?php echo $slide_row->id; ?>" onclick="spider_media_uploader('<?php echo $slide_row->id; ?>', event, false); return false;" value="Add/Edit Image" />
@@ -2259,6 +2265,8 @@ class WDSViewSliders_wds {
                             </div>
                             <input type="hidden" id="image_url<?php echo $slide_row->id; ?>" name="image_url<?php echo $slide_row->id; ?>" value="<?php echo $slide_row->image_url; ?>" />
                             <input type="hidden" id="thumb_url<?php echo $slide_row->id; ?>" name="thumb_url<?php echo $slide_row->id; ?>" value="<?php echo $slide_row->thumb_url; ?>" />
+                            <div class="clear"></div>
+                            </div>
                           </td>
                         </tr>
                         <tr class="bgcolor">
@@ -2268,7 +2276,7 @@ class WDSViewSliders_wds {
                                 <div id="wds_preview_image<?php echo $slide_row->id; ?>" class="wds_preview_image<?php echo $slide_row->id; ?> wds_preview_image"
                                      style='background-color: <?php echo WDW_S_Library::spider_hex2rgba($row->background_color, (100 - $row->background_transparent) / 100); ?>;
                                             background-image: url("<?php echo $slide_row->type != 'image'  ? $slide_row->thumb_url : $slide_row->image_url . '?date=' . date('Y-m-d H:i:s'); ?>");
-                                            background-position: center center;
+                                            background-position: <?php echo ($row->smart_crop == '1' && ($row->bg_fit == 'cover' || $row->bg_fit == 'contain')) ? $row->crop_image_position : 'center center'; ?>;
                                             background-repeat: no-repeat;
                                             background-size: <?php echo $row->bg_fit; ?>;
                                             width: inherit;
@@ -2284,7 +2292,7 @@ class WDSViewSliders_wds {
                                       case 'text': {
                                         ?>
                                         <span id="<?php echo $prefix; ?>" class="wds_draggable_<?php echo $slide_row->id; ?> wds_draggable ui-draggable" data-type="wds_text_parent" onclick="wds_showhide_layer('<?php echo $prefix; ?>_tbody', 1)"
-                                              style="<?php echo $layer->image_width ? 'width: ' . $layer->image_width . '%; ' : ''; ?><?php echo $layer->image_height ? 'height: ' . $layer->image_height . '%; ' : ''; ?>word-break: <?php echo ($layer->image_scale ? 'normal' : 'break-all'); ?>; display: inline-block; position: absolute; left: <?php echo $layer->left; ?>px; top: <?php echo $layer->top; ?>px; z-index: <?php echo $layer->depth; ?>; color: #<?php echo $layer->color; ?>; font-size: <?php echo $layer->size; ?>px; line-height: 1.25em; font-family: <?php echo $fonts[$layer->ffamily]; ?>; font-weight: <?php echo $layer->fweight; ?>; padding: <?php echo $layer->padding; ?>; background-color: <?php echo WDW_S_Library::spider_hex2rgba($layer->fbgcolor, (100 - $layer->transparent) / 100); ?>; border: <?php echo $layer->border_width; ?>px <?php echo $layer->border_style; ?> #<?php echo $layer->border_color; ?>; border-radius: <?php echo $layer->border_radius; ?>; box-shadow: <?php echo $layer->shadow; ?>"><?php echo str_replace(array("\r\n", "\r", "\n"), "<br>", $layer->text); ?></span>
+                                              style="<?php echo $layer->image_width ? 'width: ' . $layer->image_width . '%; ' : ''; ?><?php echo $layer->image_height ? 'height: ' . $layer->image_height . '%; ' : ''; ?>word-break: <?php echo ($layer->image_scale ? 'normal' : 'break-all'); ?>; display: inline-block; position: absolute; left: <?php echo $layer->left; ?>px; top: <?php echo $layer->top; ?>px; z-index: <?php echo $layer->depth; ?>; color: #<?php echo $layer->color; ?>; font-size: <?php echo $layer->size; ?>px; line-height: 1.25em; font-family: <?php echo $fonts[$layer->ffamily]; ?>; font-weight: <?php echo $layer->fweight; ?>; padding: <?php echo $layer->padding; ?>; background-color: <?php echo WDW_S_Library::spider_hex2rgba($layer->fbgcolor, (100 - $layer->transparent) / 100); ?>; border: <?php echo $layer->border_width; ?>px <?php echo $layer->border_style; ?> #<?php echo $layer->border_color; ?>; border-radius: <?php echo $layer->border_radius; ?>; box-shadow: <?php echo $layer->shadow; ?>; text-align: <?php echo $layer->text_alignment; ?>"><?php echo str_replace(array("\r\n", "\r", "\n"), "<br>", $layer->text); ?></span>
                                         <?php
                                         break;
                                       }
@@ -2304,7 +2312,6 @@ class WDSViewSliders_wds {
                                       }
                                       case 'social': {
                                         ?>
-                                        <style>#<?php echo $prefix; ?>:hover {color: #<?php echo $layer->hover_color; ?> !important;}</style>
                                         <i id="<?php echo $prefix; ?>" class="wds_draggable_<?php echo $slide_row->id; ?> wds_draggable fa fa-<?php echo $layer->social_button; ?> ui-draggable" onclick="wds_showhide_layer('<?php echo $prefix; ?>_tbody', 1)"
                                            style="opacity: <?php echo (100 - $layer->transparent) / 100; ?>; filter: Alpha(opacity=<?php echo 100 - $layer->transparent; ?>); position: absolute; left: <?php echo $layer->left; ?>px; top: <?php echo $layer->top; ?>px; z-index: <?php echo $layer->depth; ?>; color: #<?php echo $layer->color; ?>; font-size: <?php echo $layer->size; ?>px; line-height: <?php echo $layer->size; ?>px; padding: <?php echo $layer->padding; ?>; "></i>
                                         <?php
@@ -2347,23 +2354,23 @@ class WDSViewSliders_wds {
                         </tr>
                         <tr class="bgcolor">
                           <td colspan="4">
-                            <h2 class="titles">Layers<h2>
+                            <h2 class="titles">Layers</h2>
                             <div id="layer_add_buttons">
                               <div class="layer_add_buttons_wrap">		
                                 <button class="action_buttons add_text_layer <?php echo !$fv ? "" : "wds_free_button"; ?>  button-small" onclick="<?php echo !$fv ? "wds_add_layer('text', '" . $slide_row->id . "')" : "alert('This functionality is disabled in free version.')"; ?>; return false;" >Add Text Layer</button>
                               </div>	
                             <?php
-                            if (!$row->spider_uploader) {
+                            if (!$spider_uploader) {
                               ?>
                               <div class="layer_add_buttons_wrap">		
-                                <button  class="action_buttons add_image_layer <?php echo !$fv ? "" : " wds_free_button"; ?>  button-small" onclick="<?php echo !$fv ? "wds_add_layer('image', '" . $slide_row->id . "', '', event)" : "alert('This functionality is disabled in free version.')"; ?>; return false;"  >Add Image Layer</button>
+                                <button  class="action_buttons add_image_layer <?php echo  " wds_free_button"; ?>  button-small" onclick="<?php echo "alert('This functionality is disabled in free version.')"; ?>; return false;"  >Add Image Layer</button>
                               </div>
                               <?php
                             }
                             else {
                               ?>
                               <div class="layer_add_buttons_wrap">		
-                                <a href="<?php echo !$fv ? add_query_arg(array('callback' => 'wds_add_image', 'image_for' => 'add_layer', 'slide_id' => $slide_row->id, 'TB_iframe' => '1'), $query_url) : ''; ?>" onclick="<?php echo !$fv ? '' : "alert('This functionality is disabled in free version.')"; ?>; return false;" class="action_buttons add_image_layer <?php echo !$fv ? "thickbox thickbox-preview" : "wds_free_button"; ?>  button-small" title="Add Image Layer">
+                                <a href="<?php echo $fv ? add_query_arg(array('callback' => 'wds_add_image', 'image_for' => 'add_layer', 'slide_id' => $slide_row->id, 'TB_iframe' => '1'), $query_url) : ''; ?>" onclick="<?php echo "alert('This functionality is disabled in free version.')"; ?>; return false;" class="action_buttons add_image_layer <?php echo " wds_free_button"; ?>  button-small" title="Add Image Layer">
                                   Add Image layer
                                 </a>
                               </div>  
@@ -2424,10 +2431,19 @@ class WDSViewSliders_wds {
                                         <textarea id="<?php echo $prefix; ?>_text" class='wds_textarea' name="<?php echo $prefix; ?>_text" style="width: 222px; height: 60px; resize: vertical;" onkeyup="wds_new_line('<?php echo $prefix; ?>');"><?php echo $layer->text; ?></textarea>
                                         <input type="button" class="wds_editor_btn button-secondary" onclick="alert('This functionality is disabled in free version.')" value="Editor" />
                                         <div class="spider_description"></div>
+                                    </td>							  
+                                  </tr>
+                                  <tr class="wds_layer_tr">
+                                    <td class="spider_label">
+                                      <label for="<?php echo $prefix; ?>_static_layer">Static layer: </label>
+                                    </td>
+                                    <td>
+                                      <input id="<?php echo $prefix; ?>_static_layer" type="checkbox"  name="<?php echo $prefix; ?>_static_layer" <?php echo checked(1, $layer->static_layer); ?> value="1" />
+                                      <div class="spider_description">The layer will be visible on all slides.</div>
                                       </td>	
                                     </tr>
                                     <tr class="wds_layer_tr" >
-                              <td title="Leave blank to keep the initial width and height." class="wds_tooltip spider_label">
+                                      <td title="Leave blank to keep the initial width and height." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_image_width">Dimensions: </label>
                                       </td>
                                       <td>
@@ -2437,23 +2453,29 @@ class WDSViewSliders_wds {
                                       </td>
                                     </tr>	
                                     <tr class="wds_layer_tr" >
-                              <td title="In addition you can drag and drop the layer to a desired position." class="wds_tooltip spider_label">
+                                      <td title="In addition you can drag and drop the layer to a desired position." class="wds_tooltip spider_label">
                                           <label>Position: </label>
                                         </td>
                                         <td>
-                                          X <input id="<?php echo $prefix; ?>_left" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({left: jQuery(this).val() + 'px'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->left; ?>" name="<?php echo $prefix; ?>_left" />
+                                          X <input id="<?php echo $prefix; ?>_left" class="spider_int_input" type="text" <?php echo ($layer->align_layer) ? 'disabled="disabled"' : ''; ?> onchange="jQuery('#<?php echo $prefix; ?>').css({left: jQuery(this).val() + 'px'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->left; ?>" name="<?php echo $prefix; ?>_left" />
                                           Y <input id="<?php echo $prefix; ?>_top" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({top: jQuery(this).val() + 'px'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->top; ?>" name="<?php echo $prefix; ?>_top" />
+                                          <input id="<?php echo $prefix; ?>_align_layer" type="checkbox"  name="<?php echo $prefix; ?>_align_layer" <?php echo checked(1, $layer->align_layer ); ?> value="1" onchange="wds_position_left_disabled('<?php echo $prefix; ?>')" /><label for="<?php echo $prefix; ?>_align_layer">Fixed step (left, center, right)</label>
                                         </td> 
                                     </tr>
-                                    <tr class="wds_layer_tr" >
+                                    <tr class="wds_layer_tr">
                                       <td class="spider_label">
-                                        <label for="<?php echo $prefix; ?>_size">Size: </label>
+                                        <label for="<?php echo $prefix; ?>_size"><?php _e('Size:', 'wds'); ?> </label>
                                       </td>
                                       <td>
-                                        <input id="<?php echo $prefix; ?>_size" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({fontSize: jQuery(this).val() + 'px', lineHeight: jQuery(this).val() + 'px'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->size; ?>" name="<?php echo $prefix; ?>_size" /> px
-                                        <div class="spider_description"></div>
-                                      </td> 
-                                    </tr>	
+                                        <span style="display: table-cell">
+                                          <input id="<?php echo $prefix; ?>_size" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({fontSize: jQuery(this).val() + 'px', lineHeight: jQuery(this).val() + 'px'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->size; ?>" name="<?php echo $prefix; ?>_size" /> px 
+                                        </span>
+                                        <span style="display: table-cell;">  
+                                          <input id="<?php echo $prefix; ?>_min_size" class="spider_int_input" type="text" onchange="wds_min_size_validation('<?php echo $prefix; ?>')" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->min_size; ?>" name="<?php echo $prefix; ?>_min_size" /> px
+                                          <div class="spider_description"><?php _e('Minimal size must be less than the actual size.', 'wds'); ?></div>
+                                        </span>
+                                      </td>                            
+                                    </tr>
                                     <tr class="wds_layer_tr" >
                                       <td class="spider_label">
                                         <label for="<?php echo $prefix; ?>_color">Color: </label>
@@ -2463,12 +2485,21 @@ class WDSViewSliders_wds {
                                         <div class="spider_description"></div>
                                       </td> 
                                     </tr>
+                                    <tr class="wds_layer_tr">
+                                      <td class="spider_label">
+                                        <label for="<?php echo $prefix; ?>_hover_color_text">Hover Color: </label>
+                                      </td>
+                                      <td>
+                                        <input id="<?php echo $prefix; ?>_hover_color_text" class="color" type="text" value="<?php echo $layer->hover_color_text; ?>" name="<?php echo $prefix; ?>_hover_color_text" />
+                                        <div class="spider_description"></div>
+                                     </td>
+                                    </tr>
                                     <tr class="wds_layer_tr" >
                                       <td class="spider_label">
                                         <label for="<?php echo $prefix; ?>_ffamily">Font family: </label>
                                       </td>
                                       <td>
-                                <select class="select_icon select_icon_320" style="width: 200px;" id="<?php echo $prefix; ?>_ffamily" onchange="wds_change_fonts('<?php echo $prefix; ?>', 1)" name="<?php echo $prefix; ?>_ffamily">
+                                        <select class="select_icon select_icon_320" style="width: 200px;" id="<?php echo $prefix; ?>_ffamily" onchange="wds_change_fonts('<?php echo $prefix; ?>', 1)" name="<?php echo $prefix; ?>_ffamily">
                                           <?php
                                           $fonts = (isset($layer->google_fonts) && $layer->google_fonts) ? $google_fonts : $font_families;
                                           foreach ($fonts as $key => $font_family) {
@@ -2503,13 +2534,12 @@ class WDSViewSliders_wds {
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr" >
-                                      <td class="spider_label">
+                                      <td title="Use http:// and https:// for external links." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_link">Link: </label>
                                       </td>
                                       <td>
                                       <input id="<?php echo $prefix; ?>_link" class="wds_link" type="text"  value="<?php echo $layer->link; ?>" name="<?php echo $prefix; ?>_link" />
                                         <input id="<?php echo $prefix; ?>_target_attr_layer" type="checkbox"  name="<?php echo $prefix; ?>_target_attr_layer" <?php echo (($layer->target_attr_layer) ? 'checked="checked"' : ''); ?> value="1" /><label for="<?php echo $prefix; ?>_target_attr_layer"> Open in a new window</label>
-                                        <div class="spider_description">Use http:// and https:// for external links.</div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr" >
@@ -2524,16 +2554,15 @@ class WDSViewSliders_wds {
                                         <div class="spider_description"></div>
                                       </td>
                                     </tr>
-                                  </table>   
-                                  
-                            <table class="layer_table_right" >
+                                  </table> 
+                                  <table class="layer_table_right">
                                     <tr class="wds_layer_tr" >
                                       <td class="spider_label">
                                         <label for="<?php echo $prefix; ?>_layer_effect_in">Effect In:</label>
                                       </td>
                                       <td>
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_start" class="spider_int_input" type="text" value="<?php echo $layer->start; ?>" name="<?php echo $prefix; ?>_start" /> ms 
+                                          <input id="<?php echo $prefix; ?>_start" class="spider_int_input" type="text" value="<?php echo $layer->start; ?>" name="<?php echo $prefix; ?>_start" />ms 
                                           <div class="spider_description">Start</div>
                                         </span>
                                         <span style="display: table-cell;">
@@ -2549,8 +2578,12 @@ class WDSViewSliders_wds {
                                           <div class="spider_description">Effect</div>
                                         </span>
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_duration_eff_in" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" value="<?php echo $layer->duration_eff_in; ?>" name="<?php echo $prefix; ?>_duration_eff_in" /> ms
+                                          <input id="<?php echo $prefix; ?>_duration_eff_in" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" value="<?php echo $layer->duration_eff_in; ?>" name="<?php echo $prefix; ?>_duration_eff_in" />ms
                                           <div class="spider_description">Duration</div>
+                                        </span>
+                                        <span style="display: table-cell;">
+                                        <input id="<?php echo $prefix; ?>_infinite_in" type="text" name="<?php echo $prefix; ?>_infinite_in" value="<?php echo $layer->infinite_in; ?>" class="spider_int_input" title="0 for play infinte times" <?php echo ($layer->layer_effect_in == 'none') ? 'disabled="disabled"' : ''; ?> onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" />
+                                        <div class="spider_description">Iteration</div>
                                         </span>
                                         <div class="spider_description spider_free_version">Some effects are disabled in free version.</div>
                                       </td>
@@ -2561,7 +2594,7 @@ class WDSViewSliders_wds {
                                       </td>
                                       <td>
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_end" class="spider_int_input" type="text" value="<?php echo $layer->end; ?>" name="<?php echo $prefix; ?>_end"> ms
+                                          <input id="<?php echo $prefix; ?>_end" class="spider_int_input" type="text" value="<?php echo $layer->end; ?>" name="<?php echo $prefix; ?>_end">ms
                                           <div class="spider_description">Start</div>
                                         </span> 
                                         <span style="display: table-cell;">
@@ -2577,19 +2610,23 @@ class WDSViewSliders_wds {
                                           <div class="spider_description">Effect</div>
                                         </span> 
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_duration_eff_out" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" value="<?php echo $layer->duration_eff_out; ?>" name="<?php echo $prefix; ?>_duration_eff_out"> ms
+                                          <input id="<?php echo $prefix; ?>_duration_eff_out" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" value="<?php echo $layer->duration_eff_out; ?>" name="<?php echo $prefix; ?>_duration_eff_out">ms
                                           <div class="spider_description">Duration</div>
+                                        </span>
+                                        <span style="display: table-cell;">
+                                          <input id="<?php echo $prefix; ?>_infinite_out" type="text" name="<?php echo $prefix; ?>_infinite_out" value="<?php echo $layer->infinite_out; ?>" class="spider_int_input" title="0 for play infinte times" <?php echo ($layer->layer_effect_out == 'none') ? 'disabled="disabled"' : ''; ?> onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 1); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" />
+                                          <div class="spider_description">Iteration</div>
                                         </span>
                                         <div class="spider_description spider_free_version">Some effects are disabled in free version.</div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr">
-                              <td title="Use CSS type values." class="wds_tooltip spider_label">
+                                      <td title="Use CSS type values." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_padding">Padding: </label>
                                       </td>
                                       <td>
                                         <input id="<?php echo $prefix; ?>_padding" class="spider_char_input" type="text" onchange="document.getElementById('<?php echo $prefix; ?>').style.padding=jQuery(this).val();" value="<?php echo $layer->padding; ?>" name="<?php echo $prefix; ?>_padding">
-                                <div class="spider_description"></div>
+                                      <div class="spider_description"></div>
                                       </td>                              
                                     </tr>		
                                     <tr class="wds_layer_tr">                             
@@ -2602,13 +2639,12 @@ class WDSViewSliders_wds {
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr">
-                                      
-                              <td title="Value must be between 0 to 100." class="wds_tooltip spider_label">
+                                      <td title="Value must be between 0 to 100." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_transparent">Transparent: </label>
                                       </td>
                                       <td>
                                         <input id="<?php echo $prefix; ?>_transparent" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({backgroundColor: wds_hex_rgba(jQuery('#<?php echo $prefix; ?>_fbgcolor').val(), 100 - jQuery(this).val())})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->transparent; ?>" name="<?php echo $prefix; ?>_transparent"> %
-                                <div class="spider_description"></div>
+                                        <div class="spider_description"></div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr">
@@ -2631,21 +2667,45 @@ class WDSViewSliders_wds {
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr">
-                              <td title="Use CSS type values." class="wds_tooltip spider_label">
+                                      <td title="Use CSS type values." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_border_radius">Radius: </label>
                                       </td>
                                       <td>
                                         <input id="<?php echo $prefix; ?>_border_radius" class="spider_char_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({borderRadius: jQuery(this).val()})" value="<?php echo $layer->border_radius; ?>" name="<?php echo $prefix; ?>_border_radius">
-                                <div class="spider_description"></div>
+                                        <div class="spider_description"></div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr">
-                                      <td class="spider_label">
+                                      <td title="Use CSS type values (e.g. 10px 10px 5px #888888)." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_shadow">Shadow: </label>
                                       </td>
                                       <td>
                                         <input id="<?php echo $prefix; ?>_shadow" class="spider_char_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({boxShadow: jQuery(this).val()})" value="<?php echo $layer->shadow; ?>" name="<?php echo $prefix; ?>_shadow" />
-                                        <div class="spider_description">Use CSS type values (e.g. 10px 10px 5px #888888).</div>
+                                      </td>
+                                    </tr>
+                                    <tr class="wds_layer_tr" >
+                                      <td title="Add class" class="wds_tooltip spider_label">
+                                        <label for="<?php echo $prefix; ?>_add_class">Add class: </label>
+                                      </td>
+                                      <td>
+                                        <input id="<?php echo $prefix; ?>_add_class" class="spider_char_input" type="text" value="<?php echo $layer->add_class; ?>" name="<?php echo $prefix; ?>_add_class" />
+                                      </td>
+                                    </tr>
+                                    <tr class="wds_layer_tr" >
+                                      <td class="spider_label">
+                                        <label for="<?php echo $prefix; ?>_text_alignment">Text alignment: </label>
+                                      </td>
+                                      <td>
+                                          <select class="select_icon select_icon_320" style="width:70px" id="<?php echo $prefix; ?>_text_alignment" onchange="jQuery('#<?php echo $prefix; ?>').css({textAlign: jQuery(this).val()})" name="<?php echo $prefix; ?>_text_alignment">
+                                          <?php
+                                          foreach ($text_alignments as $key => $text_alignment) {
+                                            ?>
+                                            <option value="<?php echo $key; ?>" <?php echo (($layer->text_alignment == $key) ? 'selected="selected"' : ''); ?>><?php echo $text_alignment; ?></option>
+                                            <?php
+                                          }
+                                          ?>
+                                        </select>
+                                        <div class="spider_description"></div>
                                       </td>
                                     </tr>
                                   </table>
@@ -2662,6 +2722,15 @@ class WDSViewSliders_wds {
                                 <table class="layer_table_left">
                                     <tr class="wds_layer_tr" >
                                       <td class="spider_label">
+                                      <label for="<?php echo $prefix; ?>_static_layer">Static layer: </label>
+                                    </td>
+                                    <td>
+                                      <input id="<?php echo $prefix; ?>_static_layer" type="checkbox"  name="<?php echo $prefix; ?>_static_layer" <?php echo checked(1, $layer->static_layer); ?> value="1" />
+                                      <div class="spider_description">The layer will be visible on all slides.</div>
+                                    </td> 
+                                  </tr>	
+                                  <tr class="wds_layer_tr">
+                                    <td title="Set width and height of the image." class="wds_tooltip spider_label">
                                         <label>Dimensions: </label>
                                       </td>
                                       <td>
@@ -2669,46 +2738,41 @@ class WDSViewSliders_wds {
                                         <input id="<?php echo $prefix; ?>_image_width" class="spider_int_input" type="text" onkeyup="wds_scale('#<?php echo $prefix; ?>_image_scale', '<?php echo $prefix; ?>')" value="<?php echo $layer->image_width; ?>" name="<?php echo $prefix; ?>_image_width" /> x 
                                         <input id="<?php echo $prefix; ?>_image_height" class="spider_int_input" type="text" onkeyup="wds_scale('#<?php echo $prefix; ?>_image_scale', '<?php echo $prefix; ?>')" value="<?php echo $layer->image_height; ?>" name="<?php echo $prefix; ?>_image_height" /> px 
                                         <input id="<?php echo $prefix; ?>_image_scale" type="checkbox" onchange="wds_scale(this, '<?php echo $prefix; ?>')" name="<?php echo $prefix; ?>_image_scale" <?php echo (($layer->image_scale) ? 'checked="checked"' : ''); ?> /><label for="<?php echo $prefix; ?>_image_scale">Scale</label>
-                                        <input class="button-secondary wds_free_button" type="button" value="Edit Image" onclick="alert('This functionality is disabled in free version.')" />
-                                        <div class="spider_description">Set width and height of the image.</div>
+                                        <input class="wds_not_image_buttons_grey wds_free_button" type="button" value="Edit Image" onclick="alert('This functionality is disabled in free version.')" />
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr" >
-                                      <td class="spider_label">
+                                      <td title="Set the HTML attribute specified in the IMG tag." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_alt">Alt: </label>
                                       </td>
                                       <td>
                                         <input id="<?php echo $prefix; ?>_alt" type="text" size="39" value="<?php echo $layer->alt; ?>" name="<?php echo $prefix; ?>_alt" />
-                                        <div class="spider_description">Set the HTML attribute specified in the IMG tag.</div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr" >
-                                      <td class="spider_label">
+                                      <td title="Use http:// and https:// for external links." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_link">Link: </label>
                                       </td>
                                       <td>
                                         <input id="<?php echo $prefix; ?>_link" type="text" size="39" value="<?php echo $layer->link; ?>" name="<?php echo $prefix; ?>_link" />
                                         <input id="<?php echo $prefix; ?>_target_attr_layer" type="checkbox"  name="<?php echo $prefix; ?>_target_attr_layer" <?php echo (($layer->target_attr_layer) ? 'checked="checked"' : ''); ?> value="1" /><label for="<?php echo $prefix; ?>_target_attr_layer"> Open in a new window</label>
-                                        <div class="spider_description">Use http:// and https:// for external links.</div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr" >
-                                      <td class="spider_label">
+                                      <td title="In addition you can drag and drop the layer to a desired position." class="wds_tooltip spider_label">
                                         <label>Position: </label>
                                       </td>
                                       <td>
                                         X <input id="<?php echo $prefix; ?>_left" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({left: jQuery(this).val() + 'px'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->left; ?>" name="<?php echo $prefix; ?>_left" />
                                         Y <input id="<?php echo $prefix; ?>_top" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({top: jQuery(this).val() + 'px'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->top; ?>" name="<?php echo $prefix; ?>_top" />
-                                        <div class="spider_description">In addition you can drag and drop the layer to a desired position.</div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr" >
-                                      <td class="spider_label">
+                                      <td title="Value must be between 0 to 100." class="wds_tooltip spider_label">
                                         <label for="<?php echo $prefix; ?>_imgtransparent">Transparent: </label>
                                       </td>
                                       <td>
                                         <input id="<?php echo $prefix; ?>_imgtransparent" class="spider_int_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({opacity: (100 - jQuery(this).val()) / 100, filter: 'Alpha(opacity=' + 100 - jQuery(this).val() + ')'})" onkeypress="return spider_check_isnum(event)" value="<?php echo $layer->imgtransparent; ?>" name="<?php echo $prefix; ?>_imgtransparent"> %
-                                        <div class="spider_description">Value must be between 0 to 100.</div>
                                       </td>
                                     </tr>
                                     <tr class="wds_layer_tr" >
@@ -2723,15 +2787,15 @@ class WDSViewSliders_wds {
                                         <div class="spider_description"></div>
                                       </td>
                                     </tr>
-                                </table class="layer_table_right">
-                                <table>
+                                </table>
+                                <table class="layer_table_right">
                                   <tr class="wds_layer_tr">
                                     <td class="spider_label">
                                       <label for="<?php echo $prefix; ?>_layer_effect_in">Effect In:</label>
                                     </td>
                                     <td>
                                       <span style="display: table-cell;">
-                                        <input id="<?php echo $prefix; ?>_start" class="spider_int_input" type="text" value="<?php echo $layer->start; ?>" name="<?php echo $prefix; ?>_start" /> ms 
+                                        <input id="<?php echo $prefix; ?>_start" class="spider_int_input" type="text" value="<?php echo $layer->start; ?>" name="<?php echo $prefix; ?>_start" />ms 
                                         <div class="spider_description">Start</div>
                                       </span>
                                       <span style="display: table-cell;">
@@ -2747,9 +2811,13 @@ class WDSViewSliders_wds {
                                         <div class="spider_description">Effect</div>
                                       </span>
                                       <span style="display: table-cell;">
-                                        <input id="<?php echo $prefix; ?>_duration_eff_in" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" value="<?php echo $layer->duration_eff_in; ?>" name="<?php echo $prefix; ?>_duration_eff_in" /> ms
+                                        <input id="<?php echo $prefix; ?>_duration_eff_in" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" value="<?php echo $layer->duration_eff_in; ?>" name="<?php echo $prefix; ?>_duration_eff_in" />ms
                                         <div class="spider_description">Duration</div>
                                       </span>
+                                      <span style="display: table-cell;">
+                                        <input id="<?php echo $prefix; ?>_infinite_in" type="text" name="<?php echo $prefix; ?>_infinite_in" value="<?php echo $layer->infinite_in; ?>" class="spider_int_input" title="0 for play infinte times" <?php echo ($layer->layer_effect_in == 'none') ? 'disabled="disabled"' : ''; ?> onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" />
+                                        <div class="spider_description">Iteration</div>
+                                       </span>
                                       <div class="spider_description spider_free_version">Some effects are disabled in free version.</div>
                                     </td>
                                   </tr>
@@ -2759,7 +2827,7 @@ class WDSViewSliders_wds {
                                     </td>
                                     <td>
                                       <span style="display: table-cell;">
-                                        <input id="<?php echo $prefix; ?>_end" class="spider_int_input" type="text" value="<?php echo $layer->end; ?>" name="<?php echo $prefix; ?>_end"> ms
+                                        <input id="<?php echo $prefix; ?>_end" class="spider_int_input" type="text" value="<?php echo $layer->end; ?>" name="<?php echo $prefix; ?>_end">ms
                                         <div class="spider_description">Start</div>
                                       </span> 
                                       <span style="display: table-cell;">
@@ -2775,8 +2843,12 @@ class WDSViewSliders_wds {
                                         <div class="spider_description">Effect</div>
                                       </span> 
                                       <span style="display: table-cell;">
-                                        <input id="<?php echo $prefix; ?>_duration_eff_out" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" value="<?php echo $layer->duration_eff_out; ?>" name="<?php echo $prefix; ?>_duration_eff_out"> ms
+                                        <input id="<?php echo $prefix; ?>_duration_eff_out" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" value="<?php echo $layer->duration_eff_out; ?>" name="<?php echo $prefix; ?>_duration_eff_out">ms
                                         <div class="spider_description">Duration</div>
+                                      </span>
+                                      <span style="display: table-cell;">
+                                        <input id="<?php echo $prefix; ?>_infinite_out" type="text" name="<?php echo $prefix; ?>_infinite_out" value="<?php echo $layer->infinite_out; ?>" class="spider_int_input" title="0 for play infinte times" <?php echo ($layer->layer_effect_out == 'none') ? 'disabled="disabled"' : ''; ?> onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 1); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" />
+                                          <div class="spider_description">Iteration</div>
                                       </span>
                                       <div class="spider_description spider_free_version">Some effects are disabled in free version.</div>
                                     </td>
@@ -2801,21 +2873,27 @@ class WDSViewSliders_wds {
                                     </td>
                                   </tr>
                                   <tr class="wds_layer_tr">
-                                    <td class="spider_label">
+                                    <td title="Use CSS type values." class="wds_tooltip spider_label">
                                       <label for="<?php echo $prefix; ?>_border_radius">Radius: </label>
                                     </td>
                                     <td>
                                       <input id="<?php echo $prefix; ?>_border_radius" class="spider_char_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({borderRadius: jQuery(this).val()})" value="<?php echo $layer->border_radius; ?>" name="<?php echo $prefix; ?>_border_radius">
-                                      <div class="spider_description">Use CSS type values.</div>
                                     </td>
                                   </tr>
                                   <tr class="wds_layer_tr">
-                                    <td class="spider_label">
+                                    <td title="Use CSS type values." class="wds_tooltip spider_label">
                                       <label for="<?php echo $prefix; ?>_shadow">Shadow: </label>
                                     </td>
                                     <td>
                                       <input id="<?php echo $prefix; ?>_shadow" class="spider_char_input" type="text" onchange="jQuery('#<?php echo $prefix; ?>').css({boxShadow: jQuery(this).val()})" value="<?php echo $layer->shadow; ?>" name="<?php echo $prefix; ?>_shadow" />
-                                      <div class="spider_description">Use CSS type values.</div>
+                                    </td>
+                                  </tr>
+                                  <tr class="wds_layer_tr" >
+                                    <td title="Add class" class="wds_tooltip spider_label">
+                                      <label for="<?php echo $prefix; ?>_add_class">Add class: </label>
+                                    </td>
+                                    <td>
+                                      <input id="<?php echo $prefix; ?>_add_class" class="spider_char_input" type="text" value="<?php echo $layer->add_class; ?>" name="<?php echo $prefix; ?>_add_class" />
                                     </td>
                                   </tr>
                                 </table>
@@ -2832,6 +2910,15 @@ class WDSViewSliders_wds {
                                   <table class="layer_table_left">
                                     <tr class="wds_layer_tr">
                                       <td class="spider_label">
+                                      <label for="<?php echo $prefix; ?>_static_layer">Static layer: </label>
+                                    </td>
+                                    <td>
+                                     <input id="<?php echo $prefix; ?>_static_layer" type="checkbox"  name="<?php echo $prefix; ?>_static_layer" <?php echo checked(1, $layer->static_layer); ?> value="1" />
+                                     <div class="spider_description">The layer will be visible on all slides.</div>
+                                    </td> 
+                                  </tr>	
+                                  <tr class="wds_layer_tr">
+                                    <td title="In addition you can drag and drop the layer to a desired position." class="wds_tooltip spider_label">
                                         <label>Position: </label>
                                       </td>
                                       <td>
@@ -2893,7 +2980,7 @@ class WDSViewSliders_wds {
                                       </td>
                                       <td>
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_start" class="spider_int_input" type="text" value="<?php echo $layer->start; ?>" name="<?php echo $prefix; ?>_start" /> ms 
+                                          <input id="<?php echo $prefix; ?>_start" class="spider_int_input" type="text" value="<?php echo $layer->start; ?>" name="<?php echo $prefix; ?>_start" />ms 
                                           <div class="spider_description">Start</div>
                                         </span>
                                         <span style="display: table-cell;">
@@ -2909,8 +2996,12 @@ class WDSViewSliders_wds {
                                           <div class="spider_description">Effect</div>
                                         </span>
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_duration_eff_in" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 1); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" value="<?php echo $layer->duration_eff_in; ?>" name="<?php echo $prefix; ?>_duration_eff_in" /> ms
+                                          <input id="<?php echo $prefix; ?>_duration_eff_in" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 1); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" value="<?php echo $layer->duration_eff_in; ?>" name="<?php echo $prefix; ?>_duration_eff_in" />ms
                                           <div class="spider_description">Duration</div>
+                                        </span>
+                                        <span style="display: table-cell;">
+                                        <input id="<?php echo $prefix; ?>_infinite_in" type="text" name="<?php echo $prefix; ?>_infinite_in" value="<?php echo $layer->infinite_in; ?>" class="spider_int_input" title="0 for play infinte times" <?php echo ($layer->layer_effect_in == 'none') ? 'disabled="disabled"' : ''; ?> onchange="wds_trans_effect_in('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 0); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_in').val());" />
+                                        <div class="spider_description">Iteration</div>
                                         </span>
                                         <div class="spider_description spider_free_version">Some effects are disabled in free version.</div>
                                       </td>
@@ -2921,7 +3012,7 @@ class WDSViewSliders_wds {
                                       </td>
                                       <td>
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_end" class="spider_int_input" type="text" value="<?php echo $layer->end; ?>" name="<?php echo $prefix; ?>_end"> ms
+                                          <input id="<?php echo $prefix; ?>_end" class="spider_int_input" type="text" value="<?php echo $layer->end; ?>" name="<?php echo $prefix; ?>_end">ms
                                           <div class="spider_description">Start</div>
                                         </span> 
                                         <span style="display: table-cell;">
@@ -2937,8 +3028,12 @@ class WDSViewSliders_wds {
                                           <div class="spider_description">Effect</div>
                                         </span> 
                                         <span style="display: table-cell;">
-                                          <input id="<?php echo $prefix; ?>_duration_eff_out" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 1); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" value="<?php echo $layer->duration_eff_out; ?>" name="<?php echo $prefix; ?>_duration_eff_out"> ms
+                                          <input id="<?php echo $prefix; ?>_duration_eff_out" class="spider_int_input" type="text" onkeypress="return spider_check_isnum(event)" onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 1); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" value="<?php echo $layer->duration_eff_out; ?>" name="<?php echo $prefix; ?>_duration_eff_out">ms
                                           <div class="spider_description">Duration</div>
+                                        </span>
+                                        <span style="display: table-cell;">
+                                          <input id="<?php echo $prefix; ?>_infinite_out" type="text" name="<?php echo $prefix; ?>_infinite_out" value="<?php echo $layer->infinite_out; ?>" class="spider_int_input" title="0 for play infinte times" <?php echo ($layer->layer_effect_out == 'none') ? 'disabled="disabled"' : ''; ?> onchange="wds_trans_effect_out('<?php echo $slide_row->id; ?>', '<?php echo $prefix; ?>', 1); wds_trans_end('<?php echo $prefix; ?>', jQuery('#<?php echo $prefix; ?>_layer_effect_out').val());" />
+                                          <div class="spider_description">Iteration</div>
                                         </span>
                                         <div class="spider_description spider_free_version">Some effects are disabled in free version.</div>
                                       </td>
@@ -2955,8 +3050,16 @@ class WDSViewSliders_wds {
                                         <label for="<?php echo $prefix; ?>_hover_color">Hover Color: </label>
                                       </td>
                                       <td>
-                                        <input id="<?php echo $prefix; ?>_hover_color" class="color" type="text" onchange="jQuery('#<?php echo $prefix; ?>').hover(function() { jQuery(this).css({color: '#' + jQuery('#<?php echo $prefix; ?>_hover_color').val()}); }, function() { jQuery(this).css({color: '#' + jQuery('#<?php echo $prefix; ?>_color').val()}); })" value="<?php echo $layer->hover_color; ?>" name="<?php echo $prefix; ?>_hover_color" />
+                                        <input id="<?php echo $prefix; ?>_hover_color" class="color" type="text" value="<?php echo $layer->hover_color; ?>" name="<?php echo $prefix; ?>_hover_color" />
                                         <div class="spider_description"></div>
+                                      </td>
+                                    </tr>
+                                    <tr class="wds_layer_tr" >
+                                      <td title="Add class" class="wds_tooltip spider_label">
+                                        <label for="<?php echo $prefix; ?>_add_class">Add class: </label>
+                                      </td>
+                                      <td>
+                                        <input id="<?php echo $prefix; ?>_add_class" class="spider_char_input" type="text" value="<?php echo $layer->add_class; ?>" name="<?php echo $prefix; ?>_add_class" />
                                       </td>
                                     </tr>
                                   </table>
@@ -2995,7 +3098,41 @@ class WDSViewSliders_wds {
                             if ($layer->type == 'image') {
                               $prefix = 'slide' . $slide_row->id . '_layer' . $layer->id;
                               ?>
-                          wds_scale('#<?php echo $prefix; ?>_image_scale', '<?php echo $prefix; ?>');
+                                wds_scale('#<?php echo $prefix; ?>_image_scale', '<?php echo $prefix; ?>');
+                              <?php
+                            }
+                            if ($layer->type == 'text') {
+                              $prefix = 'slide' . $slide_row->id . '_layer' . $layer->id;
+                              ?>
+                                jQuery('#<?php echo $prefix; ?>').hover(
+                                  function() {
+                                    jQuery(this).css({
+                                      color: '#' + jQuery('#<?php echo $prefix; ?>_hover_color_text').val()
+                                    });
+                                  },
+                                  function() {
+                                    jQuery(this).css({
+                                      color: '#' + jQuery('#<?php echo $prefix; ?>_color').val()
+                                    });
+                                  }
+                                );
+                              <?php
+                            }
+                            if ($layer->type == 'social') {
+                              $prefix = 'slide' . $slide_row->id . '_layer' . $layer->id;
+                              ?>
+                                jQuery('#<?php echo $prefix; ?>').hover(
+                                  function() {
+                                    jQuery(this).css({
+                                      color: '#' + jQuery('#<?php echo $prefix; ?>_hover_color').val()
+                                    });
+                                  },
+                                  function() {
+                                    jQuery(this).css({
+                                      color: '#' + jQuery('#<?php echo $prefix; ?>_color').val()
+                                    });
+                                  }
+                                );
                               <?php
                             }
                           }
@@ -3013,18 +3150,19 @@ class WDSViewSliders_wds {
           </table>
         </div>
       </div>
-      <div class="wds_task_cont">
-        <input id="current_id" name="current_id" type="hidden" value="<?php echo $row->id; ?>" />
-        <input id="slide_ids_string" name="slide_ids_string" type="hidden" value="<?php echo $slide_ids_string; ?>" />
-        <input id="del_slide_ids_string" name="del_slide_ids_string" type="hidden" value="" />
-        <input id="nav_tab" name="nav_tab" type="hidden" value="<?php echo WDW_S_Library::get('nav_tab', 'global'); ?>" />
-        <input id="tab" name="tab" type="hidden" value="<?php echo WDW_S_Library::get('tab', 'slides'); ?>" />
-        <input id="sub_tab" name="sub_tab" type="hidden" value="<?php echo $sub_tab_type; ?>" />
-        <script>
-          var spider_uploader = <?php echo $row->spider_uploader; ?>;
-        </script>
-      </div>
-      <input id="task" name="task" type="hidden" value="" />
+        <div class="wds_task_cont">
+          <input id="current_id" name="current_id" type="hidden" value="<?php echo $row->id; ?>" />
+          <input id="save_as_copy" name="save_as_copy" type="hidden" value="" />
+          <input id="slide_ids_string" name="slide_ids_string" type="hidden" value="<?php echo $slide_ids_string; ?>" />
+          <input id="del_slide_ids_string" name="del_slide_ids_string" type="hidden" value="" />
+          <input id="nav_tab" name="nav_tab" type="hidden" value="<?php echo WDW_S_Library::get('nav_tab', 'global'); ?>" />
+          <input id="tab" name="tab" type="hidden" value="<?php echo WDW_S_Library::get('tab', 'slides'); ?>" />
+          <input id="sub_tab" name="sub_tab" type="hidden" value="<?php echo $sub_tab_type; ?>" />
+          <script>
+            var spider_uploader = <?php echo $spider_uploader; ?>;
+          </script>
+        </div>
+        <input id="task" name="task" type="hidden" value="" />
       <script>
         var wds_preview_url = "<?php echo add_query_arg(array('action' => 'WDSPreview', 'slider_id' => $id ? $id : 'sliderID', 'width' => '700', 'height' => '550', 'TB_iframe' => '1'), admin_url('admin-ajax.php')); ?>";
         var uploader_href = '<?php echo add_query_arg(array('callback' => 'wds_add_image', 'image_for' => 'add_update_slide', 'slide_id' => 'slideID', 'layer_id' => 'layerID', 'TB_iframe' => '1'), $query_url); ?>';
@@ -3047,15 +3185,16 @@ class WDSViewSliders_wds {
       <div class="opacity_add_image_url opacity_add_video wds_opacity_video" onclick="jQuery('.opacity_add_video').hide();jQuery('.opacity_add_image_url').hide();"></div>
       <div class="opacity_add_video wds_add_video">
         <input type="text" id="video_url" name="video_url" value="" />
-        <input type="button" id="add_video_button" class="button-primary" value="Add" />
-        <input type="button" class="button-secondary" onclick="jQuery('.opacity_add_video').hide(); return false;" value="Cancel" />
+        <input type="button" id="add_video_button" class="wds_not_image_buttons" value="Add" />
+        <input type="button" class="wds_not_image_buttons_grey" onclick="jQuery('.opacity_add_video').hide(); return false;" value="Cancel" />
         <div class="spider_description">Enter YouTube or Vimeo link here.</div>
       </div>
       <div class="opacity_add_image_url wds_resize_image">
         <input type="text" id="image_url_input" name="image_url_input" value="" />
-        <input type="button" id="add_image_url_button" class="button-primary" value="Add" />
-        <input type="button" class="button-secondary" onclick="jQuery('.opacity_add_image_url').hide(); return false;" value="Cancel" />
+        <input type="button" id="add_image_url_button" class="wds_not_image_buttons" value="Add" />
+        <input type="button" class="wds_not_image_buttons_grey" onclick="jQuery('.opacity_add_image_url').hide(); return false;" value="Cancel" />
         <div class="spider_description">Enter absolute url of the image.</div>
+        <input type="hidden" id="current_prefix" value="" />
       </div>
     </form>
     <?php

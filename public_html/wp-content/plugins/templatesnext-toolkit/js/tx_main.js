@@ -588,15 +588,8 @@ function tx_slider_cat(){
 	return tx_slider_cat_list;
 }	
 
-/*
-//Insert tx shortcode media button
-window.addEventListener("load", function(){
-    document.getElementById("insert-tx-button").onclick = function(){	
-		var $form = jQuery("#txshortcodes-form");
-		jQuery.colorbox({inline:true, href:"#tx-shortcode-form"});
-	}
-});
-*/
+
+
 
 
 

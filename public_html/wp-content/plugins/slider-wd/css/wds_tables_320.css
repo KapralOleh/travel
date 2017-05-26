@@ -37,7 +37,9 @@
   .wds_button-secondary{
     padding: 0 9px 1px 34px !important;
   }
-  
+  .wds_nav_buttons{
+    width:100% !important;
+  }
   .wds_alternate{
     background-color:#F1F1F1;
   }

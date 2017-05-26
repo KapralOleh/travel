@@ -3,7 +3,7 @@
 /*
 Plugin Name: TemplatesNext ToolKit
 Description: Custom Portfolio and Shortcode functionality for TemplatesNext Wordpress Themes
-Version: 2.0.5
+Version: 2.0.6
 Author: TemplatesNext
 Author URI: http://templatesnext.org/
 License: GPLv2 or later

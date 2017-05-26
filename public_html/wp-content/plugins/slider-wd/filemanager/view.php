@@ -56,19 +56,18 @@ class FilemanagerView {
       <script src="<?php echo WD_S_URL; ?>/filemanager/js/jq_uploader/jquery.iframe-transport.js"></script>
       <script src="<?php echo WD_S_URL; ?>/filemanager/js/jq_uploader/jquery.fileupload.js"></script>
       <script>
+        var ajaxurl = "<?php echo wp_nonce_url( admin_url('admin-ajax.php'), 'addImage', 'nonce_wd' ); ?>";
         var DS = "<?php echo addslashes('/'); ?>";
 
         var errorLoadingFile = "<?php echo 'File loading failed'; ?>";
-
         var warningRemoveItems = "<?php echo 'Are you sure you want to permanently remove selected items?'; ?>";
         var warningCancelUploads = "<?php echo 'This will cancel uploads. Continue?'; ?>";
-
         var messageEnterDirName = "<?php echo 'Enter directory name'; ?>";
         var messageEnterNewName = "<?php echo 'Enter new name'; ?>";
         var messageFilesUploadComplete = "<?php echo 'Files upload complete'; ?>";
 
         var root = "<?php echo addslashes($this->controller->get_uploads_dir()); ?>";
-        var dir = "<?php echo (isset($_REQUEST['dir']) ? addslashes(esc_html($_REQUEST['dir'])) : ''); ?>"; 
+        var dir = "<?php echo (isset($_REQUEST['dir']) ? trim(esc_html($_REQUEST['dir'])) : ''); ?>";
         var dirUrl = "<?php echo $this->controller->get_uploads_url() . (isset($_REQUEST['dir']) ? esc_html($_REQUEST['dir']) . '/' : ''); ?>";
         var callback = "<?php echo (isset($_REQUEST['callback']) ? esc_html($_REQUEST['callback']) : ''); ?>";
         var image_for = "<?php echo (isset($_REQUEST['image_for']) ? esc_html($_REQUEST['image_for']) : ''); ?>";
@@ -76,43 +75,33 @@ class FilemanagerView {
         var layer_id = "<?php echo (isset($_REQUEST['layer_id']) ? esc_html($_REQUEST['layer_id']) : ''); ?>";
         var sortBy = "<?php echo $sort_by; ?>";
         var sortOrder = "<?php echo $sort_order; ?>";
-        jQuery(document).ready(function () {
-          jQuery("#search_by_name .search_by_name").on("input keyup", function() {
-            var search_by_name = jQuery(this).val();
-            jQuery("#explorer_body .explorer_item").each(function() {
-            jQuery(this).hide();
-            if (jQuery(this).find(".item_name").html().trim().toLowerCase().indexOf(search_by_name) !== -1) {
-              jQuery(this).show();
-            }
-            });
-          });
-        });
+        var wdb_all_files = <?php echo isset($file_manager_data["all_files"]) && json_encode($file_manager_data["all_files"]) ? json_encode($file_manager_data["all_files"]) : "''"; ?>;
+        var element_load_count = <?php echo isset($file_manager_data["element_load_count"]) && json_encode($file_manager_data["element_load_count"]) ? json_encode($file_manager_data["element_load_count"]) : "''"; ?>;
       </script>
-      <script src="<?php echo WD_S_URL; ?>/filemanager/js/default.js?ver=<?php echo get_option("wd_bwg_version"); ?>"></script>
-      <link href="<?php echo WD_S_URL; ?>/filemanager/css/default.css?ver=<?php echo get_option("wd_bwg_version"); ?>" type="text/css" rel="stylesheet">
-      <link href="<?php echo WD_S_URL; ?>/css/wds_tables_320.css?ver=<?php echo get_option("wd_bwg_version"); ?>" type="text/css" rel="stylesheet">
+      <script src="<?php echo WD_S_URL; ?>/filemanager/js/default.js?ver=<?php echo WD_S_VERSION; ?>"></script>
+      <link href="<?php echo WD_S_URL; ?>/filemanager/css/default.css?ver=<?php echo WD_S_VERSION; ?>" type="text/css" rel="stylesheet">
+      <link href="<?php echo WD_S_URL; ?>/css/wds_tables_320.css?ver=<?php echo WD_S_VERSION; ?>" type="text/css" rel="stylesheet">
       <?php
       switch ($items_view) {
         case 'list':
           ?>
-          <link href="<?php echo WD_S_URL; ?>/filemanager/css/default_view_list.css?ver=<?php echo get_option("wd_bwg_version"); ?>" type="text/css" rel="stylesheet">
+          <link href="<?php echo WD_S_URL; ?>/filemanager/css/default_view_list.css?ver=<?php echo WD_S_VERSION; ?>" type="text/css" rel="stylesheet">
           <?php
           break;
         case 'thumbs':
           ?>
-          <link href="<?php echo WD_S_URL; ?>/filemanager/css/default_view_thumbs.css?ver=<?php echo get_option("wd_bwg_version"); ?>" type="text/css" rel="stylesheet">
+          <link href="<?php echo WD_S_URL; ?>/filemanager/css/default_view_thumbs.css?ver=<?php echo WD_S_VERSION; ?>" type="text/css" rel="stylesheet">
           <?php
           break;
       }
       $i = 0;
       ?>
-
       <form id="adminForm" name="adminForm" action="" method="post">
-      <?php wp_nonce_field('', 'nonce_wd'); ?>
+        <?php wp_nonce_field('', 'nonce_wd'); ?>
         <div id="wrapper">
           <div id="opacity_div" style="background-color: rgba(0, 0, 0, 0.2); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99998;"></div>
           <div id="loading_div" style="text-align: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999;">
-            <img src="<?php echo WD_S_URL . '/images/ajax_loader.gif'; ?>" class="spider_ajax_loading" style="margin-top: 200px; width:50px;">
+            <img src="<?php echo WD_S_URL . '/images/ajax_loader_back.gif'; ?>" class="spider_ajax_loading">
           </div>
           <div id="file_manager">
             <div class="ctrls_bar ctrls_bar_header">
@@ -127,10 +116,10 @@ class FilemanagerView {
                 <a class="ctrl_bar_btn btn_remove_items" onclick="onBtnRemoveItemsClick(event, this);" title="<?php echo 'Remove items'; ?>"></a>
                 <span class="ctrl_bar_divider"></span>
 								<span class="ctrl_bar_search_upload">
-                <span class="ctrl_bar_btn btn_primary">
-                  <a class="ctrl_bar_btn btn_upload_files" onclick="onBtnShowUploaderClick(event, this);"><?php echo 'Upload files'; ?></a>
+                <span class="ctrl_bar_btn">
+                  <a id="upload_images" class="ctrl_bar_btn wd-btn wd-btn-primary wd-btn-icon wd-btn-uplaod" onclick="onBtnShowUploaderClick(event, this);"><?php _e('Upload files', 'wds'); ?></a>
                 </span>
-		<span class="ctrl_bar_divider"></span>
+                <span class="ctrl_bar_divider"></span>
                 <span id="search_by_name" class="ctrl_bar_btn">
                   <input type="search" placeholder="Search" class="ctrl_bar_btn search_by_name">
 									</span>
@@ -147,7 +136,7 @@ class FilemanagerView {
                 ?>
                 <a class="path_component path_dir"
                    onclick="onPathComponentClick(event, this, '<?php echo addslashes($path_component['path']); ?>');">
-                    <?php echo $path_component['name']; ?></a>
+                    <?php echo str_replace('\\', '', $path_component['name']); ?></a>
                 <a class="path_component path_separator"><?php echo '/'; ?></a>
                 <?php
               }
@@ -157,9 +146,9 @@ class FilemanagerView {
               <div id="explorer_header_wrapper">
                 <div id="explorer_header_container">
                   <div id="explorer_header">
-                    <span class="item_numbering">#</span>
+                    <span class="item_numbering"><?php echo $items_view == 'thumbs' ? __('Order by:', 'wds') : '#'; ?></span>
                     <span class="item_icon"></span>
-                    <span class="item_name">
+                    <span class="item_name" title="<?php _e('Click to sort by name', 'wds'); ?>">
                       <span class="clickable" onclick="onNameHeaderClick(event, this);">
                           <?php
                           echo 'Name';
@@ -171,7 +160,7 @@ class FilemanagerView {
                           ?>
                       </span>
                     </span>
-                    <span class="item_size">
+                    <span class="item_size" title="<?php _e('Click to sort by size', 'wds'); ?>">
                       <span class="clickable" onclick="onSizeHeaderClick(event, this);">
                         <?php
                         echo 'Size';
@@ -183,7 +172,7 @@ class FilemanagerView {
                         ?>
                       </span>
                     </span>
-                    <span class="item_date_modified">
+                    <span class="item_date_modified" title="<?php _e('Click to sort by date modified', 'wds'); ?>">
                       <span class="clickable" onclick="onDateModifiedHeaderClick(event, this);">
                         <?php
                         echo 'Date modified';
@@ -201,7 +190,7 @@ class FilemanagerView {
               </div>
               <div id="explorer_body_wrapper">
                 <div id="explorer_body_container">
-                  <div id="explorer_body">
+                  <div id="explorer_body" data-files_count="<?php echo $file_manager_data["files_count"];?>">
                     <?php
                     foreach ($file_manager_data['files'] as $key => $file) {
                       $file['name'] = esc_html($file['name']);
@@ -232,7 +221,7 @@ class FilemanagerView {
                           isDir="<?php echo $file['is_dir'] == true ? 'true' : 'false'; ?>">
                         <span class="item_numbering"><?php echo ++$i; ?></span>
                         <span class="item_thumb">
-                          <img src="<?php echo $file['thumb']; ?>" <?php echo $key == 24 ? 'onload="loaded()"' : ''; ?> />
+                          <img src="<?php echo $file['thumb']; ?>" <?php echo $key >= 24 ? 'onload="loaded()"' : ''; ?> />
                         </span>
                         <span class="item_icon">
                           <img src="<?php echo $file['icon']; ?>"/>
@@ -256,16 +245,16 @@ class FilemanagerView {
             </div>
             <div class="ctrls_bar ctrls_bar_footer">
               <div class="ctrls_left">
-                <a class="ctrl_bar_btn btn_open btn_primary none_select" onclick="onBtnSelectAllClick();"><?php echo 'Select All'; ?></a>
+                <a id="select_all_images" class="ctrl_bar_btn wd-btn wd-btn-primary wd-not-image none_select" onclick="onBtnSelectAllClick();"><?php _e('Select All', 'wds'); ?></a>
               </div>
               <div class="ctrls_right">
                 <span id="file_names_span">
                   <span>
                   </span>
                 </span>
-                <a class="ctrl_bar_btn btn_open btn_primary none_select" onclick="onBtnOpenClick(event, this);"><?php echo ((isset($_REQUEST['image_for']) && esc_html($_REQUEST['image_for']) == 'add_slides') ? 'Add selected images to slider' : 'Add image to slider'); ?></a>
+                <a class="ctrl_bar_btn btn_open wd-btn wd-btn-primary wd-btn-icon-add wd-btn-add none_select" onclick="onBtnOpenClick(event, this);"><?php echo ((isset($_REQUEST['image_for']) && esc_html($_REQUEST['image_for']) == 'add_slides') ? 'Add selected images to slider' : 'Add image to slider'); ?></a>
                 <span class="ctrl_bar_empty_devider"></span>
-                <a class="ctrl_bar_btn btn_cancel btn_secondary none_select" onclick="onBtnCancelClick(event, this);"><?php echo 'Cancel'; ?></a>
+                <a class="ctrl_bar_btn btn_cancel wd-btn wd-btn-primary wd-btn-icon wd-btn-cancel none_select" onclick="onBtnCancelClick(event, this);"><?php _e('Cancel', 'wds'); ?></a>
               </div>
             </div>
           </div>
@@ -274,16 +263,16 @@ class FilemanagerView {
             <div class="ctrls_bar ctrls_bar_header">
               <div class="ctrls_left upload_thumb">
                 Thumbnail Maximum Dimensions:
-                <input type="text" class="upload_thumb_dim" name="upload_thumb_width" id="upload_thumb_width" value="<?php echo /*$bwg_options->upload_thumb_width;*/ 300; ?>" /> x 
-                <input type="text" class="upload_thumb_dim" name="upload_thumb_height" id="upload_thumb_height" value="<?php echo /*$bwg_options->upload_thumb_height;*/ 300; ?>" /> px
+                <input type="text" class="upload_thumb_dim" name="upload_thumb_width" id="upload_thumb_width" value="<?php echo 300; ?>" /> x 
+                <input type="text" class="upload_thumb_dim" name="upload_thumb_height" id="upload_thumb_height" value="<?php echo 300; ?>" /> px
               </div>
               <div class="ctrls_right">
                 <a class="ctrl_bar_btn btn_back" onclick="onBtnBackClick(event, this);" title="<?php echo 'Back'; ?>"></a>
               </div>
               <div class="ctrls_right_img upload_thumb">
                 Image Maximum Dimensions:
-                <input type="text" class="upload_thumb_dim" name="upload_img_width" id="upload_img_width" value="<?php echo /*$bwg_options->upload_img_width;*/ 1200; ?>" /> x 
-                <input type="text" class="upload_thumb_dim" name="upload_img_height" id="upload_img_height" value="<?php echo /*$bwg_options->upload_img_height;*/ 1200; ?>" /> px
+                <input type="text" class="upload_thumb_dim" name="upload_img_width" id="upload_img_width" value="1200" /> x 
+                <input type="text" class="upload_thumb_dim" name="upload_img_height" id="upload_img_height" value="1200" /> px
               </div>
             </div>
             <label for="jQueryUploader">
@@ -294,7 +283,7 @@ class FilemanagerView {
                 <div id="btnBrowseContainer">
                 <?php
                 $query_url = wp_nonce_url(admin_url('admin-ajax.php'), 'wds_UploadHandler', 'nonce_wd');
-                $query_url = add_query_arg(array('action' => 'wds_UploadHandler', 'dir' => $this->controller->get_uploads_dir() . '/' . (isset($_REQUEST['dir']) ? esc_html($_REQUEST['dir']) : '') . '/'), $query_url);
+                $query_url = add_query_arg(array('action' => 'wds_UploadHandler', 'dir' => (isset($_REQUEST['dir']) ? esc_html($_REQUEST['dir']) : '') . '/'), $query_url);
                 ?>
                   <input id="jQueryUploader" type="file" name="files[]"
                          data-url="<?php echo $query_url; ?>"
@@ -319,6 +308,8 @@ class FilemanagerView {
                           jQuery("#uploader_progress_text").text(messageFilesUploadComplete);
                           jQuery("#uploader_progress_text").addClass("uploader_text");
                         });
+                        jQuery("#opacity_div").show();
+                        jQuery("#loading_div").show();
                       }
                     },
                     stop: function (e, data) {
@@ -336,6 +327,8 @@ class FilemanagerView {
                           jQuery("#uploaded_files ul").prepend(jQuery("<li class=uploaded_item>" + file.name + " (<?php echo 'Uploaded' ?>)" + "</li>"));
                         }
                       });
+                      jQuery("#opacity_div").hide();
+                      jQuery("#loading_div").hide();
                     }
                   });
                 </script>
@@ -363,7 +356,7 @@ class FilemanagerView {
         <input type="hidden" name="sort_by" value="<?php echo $sort_by; ?>" />
         <input type="hidden" name="sort_order" value="<?php echo $sort_order; ?>" />
         <input type="hidden" name="items_view" value="<?php echo $items_view; ?>" />
-        <input type="hidden" name="dir" value="<?php echo (isset($_REQUEST['dir']) ? esc_html($_REQUEST['dir']) : ''); ?>" />
+        <input type="hidden" name="dir" value="<?php echo (isset($_REQUEST['dir']) ? str_replace('\\', '', ($_REQUEST['dir'])) : ''); ?>" />
         <input type="hidden" name="file_names" value="" />
         <input type="hidden" name="file_namesML" value="" />
         <input type="hidden" name="file_new_name" value="" />

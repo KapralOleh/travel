@@ -2,9 +2,9 @@
 Contributors: ysdbjorn, sleeplessdevelopers
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SR5E44BCTFG7L
 Tags: logo, slider, carousel, ticker
-Requires at least: 3.5.0
-Tested up to: 4.6
-Stable tag: 1.7.3
+Requires at least: 4.0
+Tested up to: 4.7
+Stable tag: 1.7.4
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,8 +24,6 @@ Show your partners, clients or sponsors on your website in a logo carousel!
 <li>Optional clickable logos</li>
 <li>Create a custom logo order with drag and drop</li>
 </ul>
-
-<p><a href="http://getkiwi.org/plugins/logo-carousel/">Click here for a demo</a></p>
 
 <p>Kiwi Logo Carousel uses code and libraries from <a target="_blank" href="http://bxslider.com/">bxSlider</a> and <a target="_blank" href="http://10up.com/plugins/simple-page-ordering-wordpress/">Simple Page Ordering</a></p>
 </p>
@@ -62,12 +60,6 @@ Please contact your theme developer.
 Add this code to your themes functions.php:
 ' add_filter('widget_text', 'do_shortcode'); '
 
-= About jQuery =
-You need a recent version of jQuery to make things work. Please make sure you are loading jQuery in the header of your theme.
-You can activate jQuery from the plugin when your theme or plugins aren't using jQuery already.
-When you are not sure your theme / plugins are including jQuery already, you can simply test it by creating a carousel and put it somewhere on your website. If the carousel is working, you don't need to enable jQuery from the plugin.
-When you enabled jQuery from the plugin, and the carousel is still not working. Please check your site on Javascript errors or other possible issues in installed themes and plugins.
-
 == Screenshots ==
 
 1. The Logo Carousel in action
@@ -77,6 +69,9 @@ When you enabled jQuery from the plugin, and the carousel is still not working. 
 5. Configure your carousels separately. Copy & paste the shortcode in any of your posts, your use the PHP function in your theme
 
 == Changelog ==
+
+= 1.7.4 ( 2017-04-28 ) =
+* Added Indonesian translation
 
 = 1.7.3 ( 2016-08-17 ) =
 * Bugfixes and improvements

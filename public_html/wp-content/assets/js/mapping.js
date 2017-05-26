@@ -279,7 +279,6 @@ $.ajax({
     cache: false,
     success: function(propertyJSON) {
         global_obj = propertyJSON.posts;
-        console.log(global_obj)
         initMap();
     },
     error: function(e) {
@@ -353,7 +352,7 @@ function ZoomControl(controlDiv, map) {
 
 
 function initMap(sector, zoom, myLatLng) {
-    console.log(sector)
+    
     sector = sector || 'Europe'
     globalSector = sector;
     zoom = zoom || 5;
@@ -392,8 +391,6 @@ function initMap(sector, zoom, myLatLng) {
     for (i in global_obj) {
       // Icon Url
       var iconURL = '/wp-content/assets/images/marker.png';
-      // if (global_obj[i].custom_fields.sector.join() == 'Europe') {iconURL = '/wp-content/assets/images/marker.png';}
-      // if (global_obj[i].custom_fields.sector.join() == 'Asia') {iconURL = '/wp-content/assets/images/orange.png';}
 
       if (sector == global_obj[i].custom_fields.sector.join()) {
         markers["marker"+i] = new google.maps.Marker({
@@ -480,4 +477,16 @@ function initMap(sector, zoom, myLatLng) {
 
     zoomControlDiv.index = 1;
     map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(zoomControlDiv);
+    $('#europe').click(function () {
+      initMap('Europe',5, {lat: 48.9148213, lng: 16.2493038});
+    });
+    $('#asia').click(function () {
+      initMap('Asia',4, {lat: 19.3793536, lng: 85.664784});
+    });
+    $('#america').click(function () {
+      initMap('America',4, {lat: -19.9634195, lng: -58.8537127});
+    });
+    $('#africa').click(function () {
+      initMap('Africa',4, {lat: 0.5982205, lng: 25.3869822});
+    });
 }

@@ -23,6 +23,22 @@ class WDSViewSlider {
   // Public Methods                                                                     //
   ////////////////////////////////////////////////////////////////////////////////////////
   public function display($id, $from_shortcode = 0, $wds = 0) {
+    $wds_global_options = get_option("wds_global_options", 0);
+    $global_options = json_decode($wds_global_options);
+    $register_scripts = isset($global_options->register_scripts) ? $global_options->register_scripts : 0;
+    $loading_gif = isset($global_options->loading_gif) ? $global_options->loading_gif : 0;
+
+    if ($register_scripts) {
+      wp_enqueue_style('wds_frontend');
+      wp_enqueue_style('wds_effects');
+      wp_enqueue_style('wds_font-awesome');
+      wp_enqueue_style('wds_googlefonts');
+      if ($wds === 0) {
+        wp_print_scripts('wds_jquery_mobile');
+        wp_print_scripts('wds_frontend');
+      }
+    }
+
     require_once(WD_S_DIR . '/framework/WDW_S_Library.php');
     $slider_row = $this->model->get_slider_row_data($id);
     if (!$slider_row) {
@@ -40,8 +56,8 @@ class WDSViewSlider {
     $bull_style_active = str_replace('-o', '', $slider_row->bull_style);
     $bull_style_deactive = $slider_row->bull_style;
     $bull_size_cont = $slider_row->bull_size + $slider_row->bull_margin * ($slider_row->bull_butt_img_or_not == 'text' ? 4 : 2);
-
-    $slide_rows = $this->model->get_slide_rows_data($id);
+    $order_dir = isset($slider_row->order_dir) ? $slider_row->order_dir : 'asc';
+    $slide_rows = $this->model->get_slide_rows_data($id, $order_dir);
     if (!$slide_rows) {
       echo WDW_S_Library::message(__('There are no slides in this slider.', 'wds'), 'wd_error');
       return;
@@ -87,7 +103,6 @@ class WDSViewSlider {
     }
     $enable_slideshow_music = $slider_row->music;
     $slideshow_music_url = $slider_row->music_url;
-
     $filmstrip_direction = ($slider_row->film_pos == 'right' || $slider_row->film_pos == 'left') ? 'vertical' : 'horizontal';
     $filmstrip_position = 'none';
     $filmstrip_thumb_margin_hor = 2 * $slider_row->film_tmb_margin;
@@ -140,8 +155,11 @@ class WDSViewSlider {
     $fixed_bg = isset($slider_row->fixed_bg) ? $slider_row->fixed_bg : 0;
     $smart_crop = isset($slider_row->smart_crop) ? $slider_row->smart_crop : 0;
     $crop_image_position = isset($slider_row->crop_image_position) ? $slider_row->crop_image_position : 'center center';
-
+    $slider_loop = isset($slider_row->slider_loop) ? $slider_row->slider_loop : 1;
+    $twoway_slideshow = isset($slider_row->twoway_slideshow) ? (int) $slider_row->twoway_slideshow : 0;
     $current_image_url = '';
+    $hide_on_mobile = (isset($slider_row->hide_on_mobile) ? $slider_row->hide_on_mobile : 0);
+    $full_width_for_mobile = isset($slider_row->full_width_for_mobile) ? (int) $slider_row->full_width_for_mobile : 0;
     ?>
     <style>
       .wds_bigplay_<?php echo $wds; ?>,
@@ -196,7 +214,6 @@ class WDSViewSlider {
         background-position: <?php echo ($smart_crop == '1' && ($slider_row->bg_fit == 'cover' || $slider_row->bg_fit == 'contain')) ? $crop_image_position : 'center center'; ?>;
         background-repeat: no-repeat;
         background-size: <?php echo $slider_row->bg_fit; ?>;
-        <?php echo $fixed_bg ? 'background-attachment: fixed;' : ''; ?>
         width: 100%;
       }
       #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_slideshow_image_container_<?php echo $wds; ?> {
@@ -208,7 +225,6 @@ class WDSViewSlider {
         width: <?php echo 100 - $filmstrip_width_in_percent; ?>%;
         height: /*inherit*/100%;
       }
-
       <?php
       foreach ($resolutions as $key => $resolution) {
         if ($key) {
@@ -262,7 +278,6 @@ class WDSViewSlider {
         <?php
       }
       ?>
-
       #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_slideshow_video_<?php echo $wds; ?> {
         padding: 0 !important;
         margin: 0 !important;
@@ -441,7 +456,6 @@ class WDSViewSlider {
         color: #<?php echo $slider_row->hover_color; ?>;
         cursor: pointer;
       }
-
       #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_none_selectable_<?php echo $wds; ?> {
         -webkit-touch-callout: none;
         -webkit-user-select: none;
@@ -508,7 +522,6 @@ class WDSViewSlider {
         filter: Alpha(opacity=100);
         position: absolute;
       }
-
       /* Dots.*/
       #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_slideshow_dots_container_<?php echo $wds; ?> {
         opacity: <?php echo $bull_hover; ?>;
@@ -527,7 +540,7 @@ class WDSViewSlider {
         font-size: 0;
         margin: 0 auto;
         position: relative;
-        z-index: 15;
+        z-index: 999;
       }
       #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_slideshow_dots_<?php echo $wds; ?> {
         display: inline-block;
@@ -537,6 +550,7 @@ class WDSViewSlider {
         z-index: 17;
       }
       #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_slideshow_dots_active_<?php echo $wds; ?> {
+        color: #<?php echo $slider_row->bull_act_color; ?>;
         opacity: 1;
         filter: Alpha(opacity=100);
         <?php
@@ -557,11 +571,6 @@ class WDSViewSlider {
           ?>
         background-color: #<?php echo $slider_row->bull_back_act_color; ?>;
         border-radius: <?php echo $slider_row->bull_radius; ?>;
-          <?php
-        }
-        else if ($slider_row->bull_butt_img_or_not == 'style') {
-          ?>
-        color: #<?php echo $slider_row->bull_act_color; ?>;
           <?php
         }
         ?>  
@@ -692,11 +701,9 @@ class WDSViewSlider {
         z-index: 300;
         position: relative;
       }
-
         <?php
       }
       ?>
-
       #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_slideshow_image_spun1_<?php echo $wds; ?> {
         display: table; 
         width: /*inherit*/100%; 
@@ -708,9 +715,82 @@ class WDSViewSlider {
         text-align: center;
         overflow: hidden;
       }
+      #wds_container1_<?php echo $wds; ?> .wds_loading_img {
+        background-image: url('<?php echo WD_S_URL ?>/images/loading/<?php echo $loading_gif; ?>.gif');
+      }
+      <?php 
+      if ($hide_on_mobile) {
+        ?>
+      @media screen and (max-width: <?php echo $hide_on_mobile; ?>px){
+        #wds_container1_<?php echo $wds; ?> {
+           display: none; 
+         }
+       }
+        <?php
+      }
+      if ($full_width_for_mobile) {
+        ?>
+      @media screen and (max-width: <?php echo $full_width_for_mobile; ?>px) {
+        #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> {
+          margin:<?php echo $slider_row->glb_margin; ?>px 0;
+          position: relative;
+        }
+        #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_slideshow_image_wrap_<?php echo $wds; ?> {
+          position: absolute;
+        }
+      }
+        <?php
+      }
+      ?>
       <?php echo $slider_row->css; ?>
+      <?php
+      $layers_rows = array();
+      foreach ($slide_rows as $slide_row) {
+        $layers_rows[$slide_row->id] = $this->model->get_layers_row_data($slide_row->id, $id);
+      }
+      foreach ($slide_rows as $key => $slide_row) {
+        if (isset($layers_rows[$slide_row->id]) && !empty($layers_rows[$slide_row->id])) {
+          foreach ($layers_rows[$slide_row->id] as $key => $layer) {
+            if ($layer->published) {
+              $prefix = 'wds_' . $wds . '_slide' . $slide_row->id . '_layer' . $layer->id;
+              switch ($layer->type) {
+                case 'text': {
+                  ?>
+                    #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> #<?php echo $prefix; ?> {
+                      font-size: <?php echo $layer->size; ?>px;
+                      line-height: 1.25em;
+                      padding: <?php echo $layer->padding; ?>;
+                    }
+                    #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_layer_<?php echo $layer->id; ?>{
+                      opacity: <?php echo ($layer->layer_effect_in != 'none') ? '0 !important' : '1'; ?>;
+                      filter: "Alpha(opacity=<?php echo ($layer->layer_effect_in != 'none') ? '0' : '100'; ?>)" !important;
+                    }
+                     #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> #<?php echo $prefix; ?>:hover {
+                      color: #<?php echo $layer->hover_color_text; ?> !important;
+                    }
+                  <?php
+                  break;
+                }
+                case 'image': {
+                  ?>
+                    #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_layer_<?php echo $layer->id; ?>{
+                      opacity: <?php echo ($layer->layer_effect_in != 'none') ? '0 !important' : '1'; ?>;
+                      filter: "Alpha(opacity=<?php echo ($layer->layer_effect_in != 'none') ? '0' : '100'; ?>)" !important;
+                    }
+                  <?php
+                  break;
+                }
+                default:
+                  break;
+              }
+            }
+          }
+        }
+      }
+      ?>
     </style>
     <script>
+      var wds_global_btn_<?php echo $wds; ?> = "right";
       var wds_data_<?php echo $wds; ?> = [];
       var wds_event_stack_<?php echo $wds; ?> = [];
       var wds_clear_layers_effects_in_<?php echo $wds; ?> = [];
@@ -739,12 +819,22 @@ class WDSViewSlider {
         wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["slide_layers_count"] = 0;
         wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["bg_fit"] = "<?php echo $slider_row->bg_fit; ?>";
         wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["bull_position"] = "<?php echo $bull_position; ?>";
-        wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["full_width"] = "<?php echo $slider_row->full_width; ?>";
         wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["image_thumb_url"] = "<?php echo (htmlspecialchars_decode($slide_row->thumb_url, ENT_QUOTES)); ?>";
         <?php
-        $layers_row = $this->model->get_layers_row_data($slide_row->id);
-        if ($layers_row) {
-          foreach ($layers_row as $layer_key => $layer) {
+        if (isset($layers_rows[$slide_row->id]) && !empty($layers_rows[$slide_row->id])) {
+          foreach ($layers_rows[$slide_row->id] as $layer_key => $layer) {
+            if (!isset($layer->align_layer)) {
+              $layer->align_layer = 0;
+            }
+            if (!isset($layer->infinite_in)) {
+              $layer->infinite_in = 1;
+            }
+            if (!isset($layer->infinite_out)) {
+              $layer->infinite_out = 1;
+            }
+            if (!isset($layer->min_size)) {
+              $layer->min_size = 11;
+            }
             ?>
             wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_id"] = "<?php echo $layer->id; ?>";
             wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_layer_effect_in"] = "<?php echo $layer->layer_effect_in; ?>";
@@ -755,12 +845,15 @@ class WDSViewSlider {
             wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_start"] = "<?php echo $layer->start; ?>";
             wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_end"] = "<?php echo $layer->end; ?>";
             wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_type"] = "<?php echo $layer->type; ?>";
+            wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_align_layer"] = "<?php echo $layer->align_layer; ?>";
             wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["slide_layers_count"] ++;
+            wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_infinite_in"] = "<?php echo $layer->infinite_in; ?>";
+            wds_data_<?php echo $wds; ?>["<?php echo $key; ?>"]["layer_<?php echo $layer_key; ?>_infinite_out"] = "<?php echo $layer->infinite_out; ?>";
             <?php
           }
         }		
       }
-      ?>    
+      ?>
     </script>
     <div id="wds_container1_<?php echo $wds; ?>">
       <div class="wds_loading">
@@ -822,12 +915,12 @@ class WDSViewSlider {
                 <div class="wds_circle_timer_<?php echo $wds; ?>">
                   <div class="wds_circle_timer_parts_<?php echo $wds; ?>">
                     <div class="wds_circle_timer_part_<?php echo $wds; ?>">
-                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> animated" style="border-radius:100% 0% 0% 0%;" id="top_left_<?php echo $wds; ?>"></div>
-                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> animated" style="border-radius:0% 0% 0% 100%;z-index:150;" id="bottom_left_<?php echo $wds; ?>"></div>
+                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> wds_animated" style="border-radius:100% 0% 0% 0%;" id="top_left_<?php echo $wds; ?>"></div>
+                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> wds_animated" style="border-radius:0% 0% 0% 100%;z-index:150;" id="bottom_left_<?php echo $wds; ?>"></div>
                     </div>
                     <div class="wds_circle_timer_part_<?php echo $wds; ?>">
-                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> animated" style="border-radius:0% 100% 0% 0%;" id="top_right_<?php echo $wds; ?>"></div>
-                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> animated" style="border-radius:0% 0% 100% 0%;" id="bottom_right_<?php echo $wds; ?>"></div>
+                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> wds_animated" style="border-radius:0% 100% 0% 0%;" id="top_right_<?php echo $wds; ?>"></div>
+                      <div class="wds_circle_timer_small_parts_<?php echo $wds; ?> wds_animated" style="border-radius:0% 0% 100% 0%;" id="bottom_right_<?php echo $wds; ?>"></div>
                     </div>
                   </div>
                   <div class="wds_circle_timer_center_cont_<?php echo $wds; ?>">
@@ -848,7 +941,7 @@ class WDSViewSlider {
                   if ($slide_row->id == $current_image_id) {
                     $play_pause_button_display = '';
                     $current_image_url = $slide_row->image_url;
-		    $current_image_url = addslashes(htmlspecialchars_decode($current_image_url, ENT_QUOTES));
+                    $current_image_url = addslashes(htmlspecialchars_decode($current_image_url, ENT_QUOTES));
                     $current_key = $key;
                     $image_div_num = '';
                   }
@@ -864,28 +957,17 @@ class WDSViewSlider {
                              onclick="<?php echo $slide_row->link ? 'window.open(\'' . $slide_row->link . '\', \'' . ($slide_row->target_attr_slide ? '_blank' : '_self') . '\')' : ''; ?>"
                              style="<?php echo $slide_row->link ? 'cursor: pointer;' : ''; ?><?php echo ((!$slider_row->preload_images || $image_div_num == '') ? "background-image: url('" . addslashes(htmlspecialchars_decode ($slide_row->image_url,ENT_QUOTES)) . "');" : ""); ?>">
                         <?php
-                        $layers_row = $this->model->get_layers_row_data($slide_row->id);
-                        if ($layers_row) {
-                          foreach ($layers_row as $key => $layer) {
+                        if (isset($layers_rows[$slide_row->id]) && !empty($layers_rows[$slide_row->id])) {
+                          foreach ($layers_rows[$slide_row->id] as $layer_key => $layer) {
                             if ($layer->published) {
                               $prefix = 'wds_' . $wds . '_slide' . $slide_row->id . '_layer' . $layer->id;
                               $left_percent = $slider_row->width ? 100 * $layer->left / $slider_row->width : 0;
                               $top_percent = $slider_row->height ? 100 * $layer->top / $slider_row->height : 0;
+                              $layer_add_class = isset($layer->add_class) ? $layer->add_class : '';
                               switch ($layer->type) {
                                 case 'text': {
                                   ?>
-                                  <style>
-                                    #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> #<?php echo $prefix; ?> {
-                                      font-size: <?php echo $layer->size; ?>px;
-                                      line-height: 1.25em;
-                                      padding: <?php echo $layer->padding; ?>;
-                                    }
-                                    #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_layer_<?php echo $layer->id; ?>{
-                                      opacity: <?php echo ($layer->layer_effect_in != 'none') ? '0 !important' : '1'; ?>;
-                                      filter: "Alpha(opacity=<?php echo ($layer->layer_effect_in != 'none') ? '0' : '100'; ?>)" !important;
-                                    }
-                                  </style>
-                                <span class="wds_layer_<?php echo $layer->id; ?>" data-type="wds_text_parent" id="<?php echo $prefix; ?>" wds_fsize="<?php echo $layer->size; ?>"
+                                <span class="wds_layer_<?php echo $layer->id; ?>" data-class="<?php echo $layer_add_class; ?>" data-type="wds_text_parent" data-row-key="<?php echo $key;?>" data-layer-key="<?php echo $layer_key;?>" id="<?php echo $prefix; ?>" wds_fsize="<?php echo $layer->size; ?>" wds_fmin_size="<?php echo $layer->min_size; ?>"
                                       style="<?php echo $layer->image_width ? 'width: ' . $layer->image_width . '%; ' : ''; ?>
                                              <?php echo $layer->image_height ? 'height: ' . $layer->image_height . '%; ' : ''; ?>
                                              word-break: <?php echo ($layer->image_scale ? 'normal' : 'break-all'); ?>;
@@ -898,25 +980,20 @@ class WDSViewSlider {
                                              top: <?php echo $top_percent; ?>%;
                                              z-index: <?php echo $layer->depth; ?>;
                                              color: #<?php echo $layer->color; ?>;
-                                             font-family: <?php echo str_replace('+', ' ', $layer->ffamily); ?>;
+                                             font-family: <?php echo $layer->ffamily; ?>;
                                              font-weight: <?php echo $layer->fweight; ?>;
                                              background-color: <?php echo WDW_S_Library::spider_hex2rgba($layer->fbgcolor, (100 - $layer->transparent) / 100); ?>;
                                              border: <?php echo $layer->border_width; ?>px <?php echo $layer->border_style; ?> #<?php echo $layer->border_color; ?>;
                                              border-radius: <?php echo $layer->border_radius; ?>;
-                                             box-shadow: <?php echo $layer->shadow; ?>"
+                                             box-shadow: <?php echo $layer->shadow; ?>;
+                                             text-align: <?php echo $layer->text_alignment; ?>"
                                       onclick="<?php echo $layer->link ? 'window.open(\'' . $layer->link . '\', \'' . ($layer->target_attr_layer ? '_blank' : '_self') . '\');' : ''; ?>event.stopPropagation();"><?php echo str_replace(array("\r\n", "\r", "\n"), "<br>", $from_shortcode ? do_shortcode($layer->text) : $layer->text); ?></span>
                                   <?php
                                   break;
                                 }
                                 case 'image': {
                                   ?>
-                                  <style>
-                                    #wds_container1_<?php echo $wds; ?> #wds_container2_<?php echo $wds; ?> .wds_layer_<?php echo $layer->id; ?>{
-                                      opacity: <?php echo ($layer->layer_effect_in != 'none') ? '0 !important' : '1'; ?>;
-                                      filter: "Alpha(opacity=<?php echo ($layer->layer_effect_in != 'none') ? '0' : '100'; ?>)" !important;
-                                    }
-                                  </style>
-                                <img class="wds_layer_<?php echo $layer->id; ?>" id="<?php echo $prefix; ?>" src="<?php echo $layer->image_url; ?>"
+                                <img class="wds_layer_<?php echo $layer->id; ?>" data-class="<?php echo $layer_add_class; ?>" id="<?php echo $prefix; ?>" src="<?php echo $layer->image_url; ?>"
                                      style="<?php echo $layer->link ? 'cursor: pointer; ' : ''; ?>
 				            opacity: <?php echo number_format((100 - $layer->imgtransparent) / 100, 2, ".", ""); ?>;
 					    filter: Alpha(opacity=<?php echo 100 - $layer->imgtransparent; ?>);
@@ -961,7 +1038,7 @@ class WDSViewSlider {
                 <div class="wds_btn_cont wds_contTable">
                   <span class="wds_btn_cont wds_contTableCell" style="position: relative; text-align: left;">
                     <span class="wds_left_btn_cont">
-                      <span class="wds_left-ico_<?php echo $wds; ?>" onclick="wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>); return false;">
+                      <span class="wds_left-ico_<?php echo $wds; ?>" onclick="wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>, false, 'left'); return false;">
                         <?php
                         if ($slider_row->rl_butt_img_or_not == 'style') {
                           ?>
@@ -978,7 +1055,7 @@ class WDSViewSlider {
                 <div class="wds_btn_cont wds_contTable">
                   <span class="wds_btn_cont wds_contTableCell" style="position: relative; text-align: right;">
                     <span class="wds_right_btn_cont">
-                      <span class="wds_right-ico_<?php echo $wds; ?>" onclick="wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>); return false;">
+                      <span class="wds_right-ico_<?php echo $wds; ?>" onclick="wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>, false, 'right'); return false;">
                         <?php
                         if ($slider_row->rl_butt_img_or_not == 'style') {
                           ?>
@@ -1026,8 +1103,8 @@ class WDSViewSlider {
         </div>
       </div>
     </div>
-
     <script>
+      var wds_global_btn_<?php echo $wds; ?> = "right";
       var wds_trans_in_progress_<?php echo $wds; ?> = false;
       var wds_transition_duration_<?php echo $wds; ?> = <?php echo $slider_row->effect_duration; ?>;
       if (<?php echo $slideshow_interval; ?> < 4) {
@@ -1055,7 +1132,6 @@ class WDSViewSlider {
                   '-o-transform':'rotate('+now+'deg)',
                   '-ms-transform':'rotate('+now+'deg)',
                   'transform':'rotate('+now+'deg)',
-
                   '-webkit-transform-origin': 'left bottom',
                   '-ms-transform-origin': 'left bottom',
                   '-moz-transform-origin': 'left bottom',
@@ -1072,7 +1148,6 @@ class WDSViewSlider {
                 '-o-transform':'rotate('+bottom_right_deggree_<?php echo $wds; ?> +'deg)',
                 '-ms-transform':'rotate('+bottom_right_deggree_<?php echo $wds; ?> +'deg)',
                 'transform':'rotate('+bottom_right_deggree_<?php echo $wds; ?> +'deg)',
-
                 '-webkit-transform-origin': 'left top',
                 '-ms-transform-origin': 'left top',
                 '-moz-transform-origin': 'left top',
@@ -1089,7 +1164,6 @@ class WDSViewSlider {
                   '-o-transform':'rotate('+bottom_left_deggree_<?php echo $wds; ?> +'deg)',
                   '-ms-transform':'rotate('+bottom_left_deggree_<?php echo $wds; ?> +'deg)',
                   'transform':'rotate('+bottom_left_deggree_<?php echo $wds; ?> +'deg)',
-
                   '-webkit-transform-origin': 'right top',
                   '-ms-transform-origin': 'right top',
                   '-moz-transform-origin': 'right top',
@@ -1106,7 +1180,6 @@ class WDSViewSlider {
                   '-o-transform':'rotate('+top_left_deggree_<?php echo $wds; ?> +'deg)',
                   '-ms-transform':'rotate('+top_left_deggree_<?php echo $wds; ?> +'deg)',
                   'transform':'rotate('+top_left_deggree_<?php echo $wds; ?> +'deg)',
-
                   '-webkit-transform-origin': 'right bottom',
                   '-ms-transform-origin': 'right bottom',
                   '-moz-transform-origin': 'right bottom',
@@ -1153,8 +1226,6 @@ class WDSViewSlider {
         return wds_testDom_<?php echo $wds; ?>('Perspective');
       }
       function wds_testDom_<?php echo $wds; ?>(prop) {
-        /* Browser vendor CSS prefixes.*/
-        var browserVendors = ['', '-webkit-', '-moz-', '-ms-', '-o-', '-khtml-'];
         /* Browser vendor DOM prefixes.*/
         var domPrefixes = ['', 'Webkit', 'Moz', 'ms', 'O', 'Khtml'];
         var i = domPrefixes.length;
@@ -1304,7 +1375,7 @@ class WDSViewSlider {
             if (wds_event_stack_<?php echo $wds; ?>.length > 0) {
               key = wds_event_stack_<?php echo $wds; ?>[0].split("-");
               wds_event_stack_<?php echo $wds; ?>.shift();
-              wds_change_image_<?php echo $wds; ?>(key[0], key[1], wds_data_<?php echo $wds; ?>, true);
+              wds_change_image_<?php echo $wds; ?>(key[0], key[1], wds_data_<?php echo $wds; ?>, true, direction);
             }
           }
 	  <?php if(isset($callback_items["onSliderCE"])) echo $callback_items["onSliderCE"]; ?>
@@ -1362,21 +1433,43 @@ class WDSViewSlider {
       function wds_scaleIn_<?php echo $wds; ?>(current_image_class, next_image_class, direction) {
         wds_grid_<?php echo $wds; ?>(1, 1, 0, 0, 0, 0.5, 0, current_image_class, next_image_class, direction, 0, 0, 'ease-in-out');
       }
-      function iterator_<?php echo $wds; ?>() {
+      function wds_iterator_<?php echo $wds; ?>() {
         var iterator = 1;
         if (<?php echo $enable_slideshow_shuffle; ?>) {
           iterator = Math.floor((wds_data_<?php echo $wds; ?>.length - 1) * Math.random() + 1);
         }
+        else if (<?php echo $twoway_slideshow; ?>) {
+          if (wds_global_btn_<?php echo $wds; ?> == "left") {
+            iterator = -1;
+          }
+          if ('<?php echo $slider_loop; ?>' == 0) {
+            if (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) == 0) {
+              iterator = 1;
+            }
+          }
+        }
         return iterator;
       }
-      function wds_change_image_<?php echo $wds; ?>(current_key, key, wds_data_<?php echo $wds; ?>, from_effect) {
-        <?php
-        if ($slider_row->effect == 'zoomFade') {
-          ?>
-          wds_genBgPos_<?php echo $wds; ?>();
-          <?php
+      function wds_change_image_<?php echo $wds; ?>(current_key, key, wds_data_<?php echo $wds; ?>, from_effect, btn) {
+        if (typeof btn == "undefined") {
+          var btn = "";
         }
-        ?>
+        if (wds_data_<?php echo $wds; ?>[key]["is_video"] == 'image') {
+          jQuery('<img />').attr("src", wds_data_<?php echo $wds; ?>[key]["image_url"])
+          .load(function() {
+            jQuery(this).remove();
+            wds_change_image_when_loaded_<?php echo $wds; ?>(current_key, key, wds_data_<?php echo $wds; ?>, from_effect, btn);
+          })
+          .error(function() {
+            jQuery(this).remove();
+            wds_change_image_when_loaded_<?php echo $wds; ?>(current_key, key, wds_data_<?php echo $wds; ?>, from_effect, btn);
+          });
+        }
+        else {
+          wds_change_image_when_loaded_<?php echo $wds; ?>(current_key, key, wds_data_<?php echo $wds; ?>, from_effect, btn);
+        }
+      }
+      function wds_change_image_when_loaded_<?php echo $wds; ?>(current_key, key, wds_data_<?php echo $wds; ?>, from_effect, btn) {
         /* Pause videos.*/
         jQuery("#wds_slideshow_image_container_<?php echo $wds; ?>").find("iframe").each(function () {
           if (typeof jQuery(this)[0].contentWindow != "undefined") {
@@ -1413,24 +1506,38 @@ class WDSViewSlider {
             wds_event_stack_<?php echo $wds; ?>.push(current_key + '-' + key);
             return;
           }
-          var direction = 'right';
-          var int_curr_key = parseInt(wds_current_key_<?php echo $wds; ?>);
-          var int_key = parseInt(key);
-          var last_pos = wds_data_<?php echo $wds; ?>.length - 1;
-          if (int_curr_key > int_key) {
-            direction = 'left';
-          }
-          else if (int_curr_key == int_key) {
-            return;
-          }
-          if (int_key == 0) {
-            if (int_curr_key == last_pos) {
-              direction = 'right';
+          if (btn == "") {
+            var direction = "right";
+            var int_curr_key = parseInt(wds_current_key_<?php echo $wds; ?>);
+            var int_key = parseInt(key);
+            var last_pos = wds_data_<?php echo $wds; ?>.length - 1;
+            if (int_curr_key > int_key) {
+              direction = 'left';
+            }
+            else if (int_curr_key == int_key) {
+              return;
+            }
+            /* From last slide to first.*/
+            if (int_key == 0) {
+              if (int_curr_key == last_pos) {
+                direction = 'right';
+              }
+            }
+            /* From first slide to last if there are more than two slides in the slider.*/
+            if (int_key == last_pos) {
+              if (int_curr_key == 0) {
+                if (last_pos > 1) {
+                  direction = 'left';
+                }
+              }
             }
           }
-          if (int_key == last_pos) {
-            if (int_curr_key == 0) {
-              direction = 'left';
+          else {
+            direction = btn;
+          }
+          if (<?php echo $enable_slideshow_autoplay; ?>) {
+            if (<?php echo $twoway_slideshow; ?>) {
+              wds_global_btn_<?php echo $wds; ?> = direction;
             }
           }
           /* Set active thumbnail position.*/
@@ -1447,17 +1554,17 @@ class WDSViewSlider {
           <?php } ?>
           var current_slide_layers_count = wds_data_<?php echo $wds; ?>[current_key]["slide_layers_count"];
           var next_slide_layers_count = wds_data_<?php echo $wds; ?>[key]["slide_layers_count"];
-
           /* Clear layers before image change.*/
           function set_layer_effect_out_before_change(m) {
             wds_clear_layers_effects_out_before_change_<?php echo $wds; ?>[current_key][m] = setTimeout(function() {
               if (wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_type"] != 'social') {
                 jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).css('-webkit-animation-duration' , 0.6 + 's').css('animation-duration' , 0.6 + 's');
-                jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_layer_effect_out"] + ' animated');
+                jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_layer_effect_out"] + ' wds_animated');
+                  jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).addClass(jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).data("class"));
               }
               else {
                 jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).css('-webkit-animation-duration' , 0.6 + 's').css('animation-duration' , 0.6 + 's');
-                jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_layer_effect_out"] + ' fa fa-' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_social_button"] + ' animated');
+                jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[current_key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_layer_effect_out"] + ' fa fa-' + wds_data_<?php echo $wds; ?>[current_key]["layer_" + m + "_social_button"] + ' wds_animated');
               }
             }, 10);
           }
@@ -1496,7 +1603,12 @@ class WDSViewSlider {
               }
             }
             jQuery(".wds_line_timer_<?php echo $wds; ?>").css({width: 0});
-            wds_<?php echo $slideshow_effect; ?>_<?php echo $wds; ?>(current_image_class, next_image_class, direction);
+            if (typeof wds_<?php echo $slideshow_effect; ?>_<?php echo $wds; ?> == "function") {
+              wds_<?php echo $slideshow_effect; ?>_<?php echo $wds; ?>(current_image_class, next_image_class, direction);
+            }
+            else {
+              wds_none_<?php echo $wds; ?>(current_image_class, next_image_class, direction);
+            }
             if ('<?php echo $slider_row->timer_bar_type; ?>' != 'none') {
               if (<?php echo $enable_slideshow_autoplay; ?> || jQuery('.wds_ctrl_btn_<?php echo $wds; ?>').hasClass('fa-pause')) {
                 if ('<?php echo $slider_row->timer_bar_type; ?>' == 'top' || '<?php echo $slider_row->timer_bar_type; ?>' == 'bottom') {
@@ -1586,9 +1698,19 @@ class WDSViewSlider {
             }
           }, wds_duration_for_change_<?php echo $wds; ?>);
         }
+        <?php
+        if ($slider_row->effect == 'zoomFade') {
+          ?>
+          wds_genBgPos_<?php echo $wds; ?>(next_image_class);
+          <?php
+        }
+        ?>
+        wds_window_fixed_size<?php echo $wds; ?>(next_image_class);
         <?php if(isset($callback_items["onSliderCS"])) echo $callback_items["onSliderCS"]; ?>
       }
       function wds_resize_slider_<?php echo $wds; ?>() {
+        var full_width = (jQuery(window).width() <= parseInt(<?php echo $slider_row->full_width_for_mobile; ?>) || <?php echo $slider_row->full_width; ?>) ? 1 : 0;
+        wds_glb_margin_<?php echo $wds; ?> = parseInt('<?php echo $slider_row->glb_margin; ?>');
         if ('<?php echo $slider_row->bull_butt_img_or_not; ?>' == 'text') {
           wds_set_text_dots_cont(<?php echo $wds; ?>);
         }
@@ -1599,24 +1721,28 @@ class WDSViewSlider {
         if (slide_width > slide_orig_width) {
           slide_width = slide_orig_width;
         }
-        var ratio = slide_width / slide_orig_width;
-
-        <?php
-        if ($slider_row->full_width) {
-          ?>
-        ratio = jQuery(window).width() / slide_orig_width;
-        slide_orig_width = jQuery(window).width() - <?php echo 2 * $slider_row->glb_margin; ?>;
-        slide_orig_height = <?php echo $image_height; ?> * slide_orig_width / <?php echo $image_width; ?>;
-        slide_width = jQuery(window).width() - <?php echo 2 * $slider_row->glb_margin; ?>;
-        wds_full_width_<?php echo $wds; ?>();
-          <?php
+        var ratio = slide_width / (slide_orig_width + 2 * wds_glb_margin_<?php echo $wds; ?>);
+        if (full_width) {
+          ratio = jQuery(window).width() / slide_orig_width;
+          /* wds_glb_margin_<?php echo $wds; ?> *= ratio; */
+          slide_orig_width = jQuery(window).width()/*  - (2 * wds_glb_margin_<?php echo $wds; ?>) */;
+          slide_orig_height = <?php echo $image_height + $filmstrip_height; ?> * slide_orig_width / <?php echo $image_width; ?>;
+          slide_width = jQuery(window).width()/*  - (2 * wds_glb_margin_<?php echo $wds; ?>) */;
+          wds_full_width_<?php echo $wds; ?>();
         }
-        ?>
+        else if (parseInt(<?php echo $slider_row->full_width_for_mobile ?>)) {
+          jQuery(".wds_slideshow_image_wrap_<?php echo $wds; ?>").removeAttr("style");
+        }
+        wds_glb_margin_<?php echo $wds; ?> = parseInt('<?php echo $slider_row->glb_margin; ?>');
+        wds_glb_margin_<?php echo $wds; ?> *= ratio;
+        if (!full_width) {
+          slide_orig_height -= wds_glb_margin_<?php echo $wds; ?>;
+        }
+        jQuery("#wds_container2_<?php echo $wds; ?>").css("margin", wds_glb_margin_<?php echo $wds; ?> + "px " + (full_width ? 0 : '') + "");
         var slide_height = slide_orig_height;
         if (slide_orig_width > slide_width) {
           slide_height = Math.floor(slide_width * slide_orig_height / slide_orig_width);
         }
-
         jQuery(".wds_slideshow_image_wrap_<?php echo $wds; ?>, #wds_container2_<?php echo $wds; ?>").height(slide_height + <?php echo ($filmstrip_direction == 'horizontal' ? $filmstrip_height : 0); ?>);
         jQuery(".wds_slideshow_image_container_<?php echo $wds; ?>").height(slide_height);
         jQuery(".wds_slideshow_image_<?php echo $wds; ?>").height(slide_height);
@@ -1626,6 +1752,9 @@ class WDSViewSlider {
           wds_theImage.src = jQuery(this).attr("src");
           var wds_origWidth = wds_theImage.width;
           var wds_origHeight = wds_theImage.height;
+          if (typeof wds_theImage.remove != 'undefined') {
+            wds_theImage.remove();
+          }
           var wds_imageWidth = jQuery(this).attr("wds_image_width");
           var wds_imageHeight = jQuery(this).attr("wds_image_height");
           var wds_width = wds_imageWidth;
@@ -1658,34 +1787,65 @@ class WDSViewSlider {
               });
             }
           }
-
         });
         jQuery(".wds_slideshow_image_<?php echo $wds; ?> span, .wds_slideshow_image_<?php echo $wds; ?> i").each(function () {
+          var font_size;
+          var ratio_new;
+          var font_size_new;
+          var min_font_size;
+          font_size = parseFloat(jQuery(this).attr("wds_fsize")) * ratio;
+          font_size_new = font_size;
+          ratio_new = ratio;
+          if (jQuery(this).attr('data-type') == 'wds_text_parent') {
+            min_font_size = jQuery(this).attr("wds_fmin_size");
+            if (min_font_size > font_size) {
+              font_size_new = min_font_size;
+              ratio_new = ratio * font_size_new / font_size;
+            }
+          }
           jQuery(this).css({
-            fontSize: (parseFloat(jQuery(this).attr("wds_fsize")) * ratio) + "px",
+            fontSize: (font_size_new) + "px",
             lineHeight: "1.25em",
-            paddingLeft: (parseFloat(jQuery(this).attr("wds_fpaddingl")) * ratio) + "px",
-            paddingRight: (parseFloat(jQuery(this).attr("wds_fpaddingr")) * ratio) + "px",
-            paddingTop: (parseFloat(jQuery(this).attr("wds_fpaddingt")) * ratio) + "px",
-            paddingBottom: (parseFloat(jQuery(this).attr("wds_fpaddingb")) * ratio) + "px",
+            paddingLeft: (parseFloat(jQuery(this).attr("wds_fpaddingl")) * ratio_new) + "px",
+            paddingRight: (parseFloat(jQuery(this).attr("wds_fpaddingr")) * ratio_new) + "px",
+            paddingTop: (parseFloat(jQuery(this).attr("wds_fpaddingt")) * ratio_new) + "px",
+            paddingBottom: (parseFloat(jQuery(this).attr("wds_fpaddingb")) * ratio_new) + "px",
           });
         });
+        jQuery(".wds_slideshow_image_<?php echo $wds; ?> [data-type='wds_text_parent']").each(function () {
+          var id = jQuery(this).attr("id");
+            if (wds_data_<?php echo $wds; ?>[jQuery("#" + id).data("row-key")]["layer_"+ jQuery("#" + id).data("layer-key") +"_align_layer"] == 1) {
+              var slider_width = jQuery(".wds_slider_" + <?php echo $wds; ?>).outerWidth(); 
+              var left;
+              if ((jQuery("#" +  id).offset().left - jQuery(".wds_slideshow_image_<?php echo $wds; ?>").offset().left) > (slider_width / 2 + jQuery(this).outerWidth() / 2)) {
+                left = slider_width - jQuery(this).outerWidth();
+              }
+              else if ((jQuery("#" +  id).offset().left - jQuery(".wds_slideshow_image_<?php echo $wds; ?>").offset().left) < (slider_width / 2 - jQuery(this).outerWidth() / 2)) {
+                left = 0;
+              }
+              else {
+                left = slider_width / 2 - jQuery(this).outerWidth() / 2;
+              }
+              var left_percent = (slider_width != 0) ? 100 * left / slider_width : 0;
+              jQuery("#" +  id).css({left:left_percent + "%"});
+            }
+        });
+        wds_window_fixed_size<?php echo $wds; ?>("#wds_image_id_<?php echo $wds; ?>_" + wds_data_<?php echo $wds; ?>[parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val())]["id"]);
       }
       /* Generate background position for Zoom Fade effect.*/
-      function wds_genBgPos_<?php echo $wds; ?>() {
+      function wds_genBgPos_<?php echo $wds; ?>(current_key) {
         var bgSizeArray = [0, 70];
         var bgSize = bgSizeArray[Math.floor(Math.random() * bgSizeArray.length)];
-        
         var bgPosXArray = ['left', 'right'];
         var bgPosYArray = ['top', 'bottom'];
         var bgPosX = bgPosXArray[Math.floor(Math.random() * bgPosXArray.length)];
         var bgPosY = bgPosYArray[Math.floor(Math.random() * bgPosYArray.length)];
-        jQuery(".wds_slideshow_image_<?php echo $wds; ?>").css({
+        jQuery(current_key + " .wds_slideshow_image_<?php echo $wds; ?>").css({
           backgroundPosition: bgPosX + " " + bgPosY,
-          backgroundSize : (100 + bgSize) + "%",
-          webkitAnimation: '<?php echo $slideshow_interval; ?>s linear 0s alternate infinite wdszoom' + bgSize,
-          mozAnimation: '<?php echo $slideshow_interval; ?>s linear 0s alternate infinite wdszoom' + bgSize,
-          animation: '<?php echo $slideshow_interval; ?>s linear 0s alternate infinite wdszoom' + bgSize
+          backgroundSize : (100 + bgSize) + "% " + (100 + bgSize) + "%",
+          webkitAnimation: ' wdszoom' + bgSize + ' <?php echo 1.1 * $slideshow_interval; ?>s linear 0s alternate infinite',
+          mozAnimation: ' wdszoom' + bgSize + ' <?php echo 1.1 * $slideshow_interval; ?>s linear 0s alternate infinite',
+          animation: ' wdszoom' + bgSize + ' <?php echo 1.1 * $slideshow_interval; ?>s linear 0s alternate infinite'
         });
       }
       jQuery(window).resize(function () {
@@ -1695,8 +1855,8 @@ class WDSViewSlider {
       function wds_full_width_<?php echo $wds; ?>() {
         var left = jQuery("#wds_container1_<?php echo $wds; ?>").offset().left;
         jQuery(".wds_slideshow_image_wrap_<?php echo $wds; ?>").css({
-          left: (-left + <?php echo $slider_row->glb_margin; ?>) + "px",
-          width: (jQuery(window).width() - <?php echo 2 * $slider_row->glb_margin; ?>) + "px",
+          left: (-left/*  + wds_glb_margin_<?php echo $wds; ?> */) + "px",
+          width: (jQuery(window).width()/*  - (2 * wds_glb_margin_<?php echo $wds; ?>) */) + "px",
           maxWidth: "none"
         });
       }
@@ -1711,9 +1871,74 @@ class WDSViewSlider {
           wds_ready_<?php echo $wds; ?>();
         });
       }
+      if ('<?php echo $fixed_bg; ?>' == 1) {
+        jQuery(window).scroll(function () {
+          wds_window_fixed_pos<?php echo $wds; ?>();
+        });
+      }
+      function wds_window_fixed_size<?php echo $wds; ?>(id) {
+        if ('<?php echo $fixed_bg; ?>' != 1 || wds_data_<?php echo $wds; ?>[parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val())]["is_video"] != 'image') {
+          return;
+        }
+        var image = new Image();
+        image.src = jQuery(id + " .wds_slideshow_image_<?php echo $wds; ?>").css('background-image').replace(/url\(|\)$|"/ig, '');
+        var slide_bg_width = image.width;
+        var slide_bg_height = image.height;
+        if (typeof image.remove != 'undefined') {
+          image.remove();
+        }
+        var window_height = jQuery(window).height();
+        var window_width = jQuery(window).width();
+        var width, height;
+        if ('<?php echo $slider_row->bg_fit; ?>' == 'cover' || '<?php echo $slider_row->bg_fit; ?>' == 'contain') {
+          var scale = Math.max(window_width / slide_bg_width, window_height / slide_bg_height);
+          width = slide_bg_width * scale;
+          height = slide_bg_height * scale;
+        }
+        else {
+          width = window_width;
+          height = window_height;
+        }
+        jQuery(id + " .wds_slideshow_image_<?php echo $wds; ?>").css({"background-size": width + "px " + height + "px"});
+        wds_window_fixed_pos<?php echo $wds; ?>(id);
+      }
+      function wds_window_fixed_pos<?php echo $wds; ?>(id) {
+        var cont = (typeof id == "undefined") ? "" : id + " ";
+        var offset = jQuery(cont + ".wds_slideshow_image_<?php echo $wds; ?>").offset().top;
+        var scrtop = jQuery(document).scrollTop();
+        var sliderheight = jQuery(cont + ".wds_slideshow_image_<?php echo $wds; ?>").height();
+        var window_height = jQuery(window).height();
+        var fixed_pos;
+        if ('<?php echo ($smart_crop == '1' && ($slider_row->bg_fit == 'cover' || $slider_row->bg_fit == 'contain')) ?>' ) {
+          if ('<?php echo $crop_image_position; ?>' == 'right bottom'
+            || '<?php echo $crop_image_position; ?>' == 'center bottom'
+            || '<?php echo $crop_image_position; ?>' == 'left bottom') {
+            pos_retion_height = "100%";
+          }
+          else if ('<?php echo $crop_image_position; ?>' == 'left center'
+            || '<?php echo $crop_image_position; ?>' == 'center center'
+            || '<?php echo $crop_image_position; ?>' == 'right center') {
+            pos_retion_height = "50%";
+          }
+          else if ('<?php echo $crop_image_position; ?>' == 'left top'
+            || '<?php echo $crop_image_position; ?>' == 'center top'
+            || '<?php echo $crop_image_position; ?>' == 'right top') {
+            pos_retion_height = "0%";
+          }
+        }
+        fixed_pos = offset - scrtop - window_height / 2 + sliderheight / 2;
+        jQuery(cont + ".wds_slideshow_image_<?php echo $wds; ?>").css({"background-position": "50% " + "calc(50% - " + fixed_pos + "px)"});
+        if (scrtop < offset + sliderheight) {
+          if ('<?php echo $smart_crop == '1' && ($slider_row->bg_fit == 'contain' || $slider_row->bg_fit == 'cover') ?>' == true) {
+            jQuery(cont + ".wds_slideshow_image_<?php echo $wds; ?>").css({"background-position": "" + pos_retion_height + " " + "calc(50% - " + fixed_pos + "px)"});
+          }
+        }
+      }
       function wds_ready_<?php echo $wds; ?>() {
         <?php
-        if(isset($callback_items["onSliderI"])) echo $callback_items["onSliderI"]; 
+        if (isset($callback_items["onSliderI"])) {
+          echo $callback_items["onSliderI"];
+        }
         if ($enable_slideshow_autoplay && $slider_row->stop_animation) {
           ?>
         jQuery("#wds_container1_<?php echo $wds; ?>").mouseover(function(e) {
@@ -1724,11 +1949,17 @@ class WDSViewSlider {
             var e = window.event;
           }
           var reltg = (e.relatedTarget) ? e.relatedTarget : e.toElement;
-          while (reltg.tagName != 'BODY') {
-            if (reltg.id == this.id){
-              return;
+          if (typeof reltg != "undefined") {
+            if (reltg != null) {
+              if (typeof reltg.tagName != "undefined") {
+                while (reltg.tagName != 'BODY') {
+                  if (reltg.id == this.id){
+                    return;
+                  }
+                  reltg = reltg.parentNode;
+                }
+              }
             }
-            reltg = reltg.parentNode;
           }
           wds_play_animation_<?php echo $wds; ?>();
         });
@@ -1762,15 +1993,13 @@ class WDSViewSlider {
             jQuery(".wds_slideshow_dots_container_<?php echo $wds; ?>").css({opacity: 0, filter: "Alpha(opacity=0)"});
           });
         }
-
         wds_resize_slider_<?php echo $wds; ?>();
         jQuery("#wds_container2_<?php echo $wds; ?>").css({visibility: 'visible'});
         jQuery(".wds_loading").hide();
-
       	<?php
         if ($slider_row->effect == 'zoomFade') {
           ?>
-          wds_genBgPos_<?php echo $wds; ?>();
+          wds_genBgPos_<?php echo $wds; ?>("#wds_image_id_<?php echo $wds; ?>_" + wds_data_<?php echo $wds; ?>[parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val())]["id"]);
           <?php
         }
         if ($image_right_click) {
@@ -1804,7 +2033,7 @@ class WDSViewSlider {
           if (typeof jQuery().swiperight !== 'undefined') {
             if (jQuery.isFunction(jQuery().swiperight)) {
               jQuery('#wds_container1_<?php echo $wds; ?>').swiperight(function () {
-                wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>);
+                wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>, false, "left");
                  <?php if(isset($callback_items["onSwipeS"])) echo $callback_items["onSwipeS"]; ?>
                 return false;
               });
@@ -1813,16 +2042,14 @@ class WDSViewSlider {
           if (typeof jQuery().swipeleft !== 'undefined') {
             if (jQuery.isFunction(jQuery().swipeleft)) {
               jQuery('#wds_container1_<?php echo $wds; ?>').swipeleft(function () {
-                wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>);
+                wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>, false, "right");
                 <?php if(isset($callback_items["onSwipeS"])) echo $callback_items["onSwipeS"]; ?>
                 return false;
               });
             }
           }
         }
-
         var wds_click = isMobile ? 'touchend' : 'click';
-
         var mousewheelevt = (/Firefox/i.test(navigator.userAgent)) ? "DOMMouseScroll" : "mousewheel"; /* FF doesn't recognize mousewheel as of FF3.x */
          var wds_play_pause = 0;
         function wds_play_pause_<?php echo $wds; ?>() {
@@ -1831,7 +2058,6 @@ class WDSViewSlider {
             /* Play.*/
             jQuery(".wds_slideshow_play_pause_<?php echo $wds; ?>").attr("title", "<?php echo __('Pause', 'bwg'); ?>");
             jQuery(".wds_slideshow_play_pause_<?php echo $wds; ?>").attr("class", "wds_ctrl_btn_<?php echo $wds; ?> wds_slideshow_play_pause_<?php echo $wds; ?> fa fa-pause");
-
             /* Finish current animation and begin the other.*/
             if (<?php echo $enable_slideshow_autoplay; ?>) {
               if ('<?php echo $slider_row->timer_bar_type; ?>' != 'top') {
@@ -1845,7 +2071,9 @@ class WDSViewSlider {
             }
             play_<?php echo $wds; ?>();
             if (<?php echo $enable_slideshow_music ?>) {
-              document.getElementById("wds_audio_<?php echo $wds; ?>").play();
+              if ('<?php echo $slideshow_music_url; ?>' != '') {
+                document.getElementById("wds_audio_<?php echo $wds; ?>").play();
+              }
             }
           }
           else {
@@ -1859,7 +2087,6 @@ class WDSViewSlider {
                 clearTimeout(wds_clear_layers_effects_out_<?php echo $wds; ?>[current_key][k]);
               }
             }, wds_duration_for_clear_effects_<?php echo $wds; ?>);
-
             window.clearInterval(wds_playInterval_<?php echo $wds; ?>);
             jQuery(".wds_slideshow_play_pause_<?php echo $wds; ?>").attr("title", "<?php echo __('Play', 'bwg'); ?>");
             jQuery(".wds_slideshow_play_pause_<?php echo $wds; ?>").attr("class", "wds_ctrl_btn_<?php echo $wds; ?> wds_slideshow_play_pause_<?php echo $wds; ?> fa fa-play");
@@ -1895,11 +2122,11 @@ class WDSViewSlider {
             var delta = evt.detail ? evt.detail*(-40) : evt.wheelDelta; /* Check for detail first, because it is used by Opera and FF.*/
             if (delta > 0) {
               /* Scroll up.*/
-              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>);
+              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>, false, "left");
             }
             else {
               /* Scroll down.*/
-              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>);
+              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>, false, "right");
             }
             return false;
           });
@@ -1908,10 +2135,10 @@ class WDSViewSlider {
         if (<?php echo $keyboard_nav; ?>) {
           jQuery(document).on('keydown', function (e) {
             if (e.keyCode === 39 || e.keyCode === 38) { /* Right arrow.*/
-              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>);
+              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>, false, "right");
             }
             else if (e.keyCode === 37 || e.keyCode === 40) { /* Left arrow.*/
-              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>);  
+              wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) - wds_iterator_<?php echo $wds; ?>()) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1, wds_data_<?php echo $wds; ?>, false, "left");  
             }
             else if (e.keyCode === 32) { /* Space.*/
               wds_play_pause_<?php echo $wds; ?>();
@@ -1925,10 +2152,12 @@ class WDSViewSlider {
         if (<?php echo $enable_slideshow_autoplay; ?>) {
           play_<?php echo $wds; ?>();
 
-          jQuery(".wds_slideshow_play_pause_<?php echo $wds; ?>").attr("title", "<?php echo __('Pause', 'bwg'); ?>");
+          jQuery(".wds_slideshow_play_pause_<?php echo $wds; ?>").attr("title", "<?php echo __('Pause', 'wds'); ?>");
           jQuery(".wds_slideshow_play_pause_<?php echo $wds; ?>").attr("class", "wds_ctrl_btn_<?php echo $wds; ?> wds_slideshow_play_pause_<?php echo $wds; ?> fa fa-pause");
           if (<?php echo $enable_slideshow_music ?>) {
-            document.getElementById("wds_audio_<?php echo $wds; ?>").play();
+            if ('<?php echo $slideshow_music_url; ?>' != '') {
+              document.getElementById("wds_audio_<?php echo $wds; ?>").play();
+            }
           }
           if ('<?php echo $slider_row->timer_bar_type; ?>' != 'none') {
             if ('<?php echo $slider_row->timer_bar_type; ?>' != 'top') {
@@ -1940,10 +2169,21 @@ class WDSViewSlider {
         }
         <?php if ($slider_row->preload_images) { ?>
         function wds_preload_<?php echo $wds; ?>(preload_key) {
+          if (wds_data_<?php echo $wds; ?>[preload_key]["is_video"] == 'image') {
           jQuery('<img />')
-            .load(function() { if (preload_key < wds_data_<?php echo $wds; ?>.length - 1) wds_preload_<?php echo $wds; ?>(preload_key + 1); })
-            .error(function() { if (preload_key < wds_data_<?php echo $wds; ?>.length - 1) wds_preload_<?php echo $wds; ?>(preload_key + 1); })
-            .attr("src", (wds_data_<?php echo $wds; ?>[preload_key]["is_video"] == 'image' ? wds_data_<?php echo $wds; ?>[preload_key]["image_url"] : ""));
+            .load(function() {
+              jQuery(this).remove();
+              if (preload_key < wds_data_<?php echo $wds; ?>.length - 1) wds_preload_<?php echo $wds; ?>(preload_key + 1);
+            })
+            .error(function() {
+              jQuery(this).remove();
+              if (preload_key < wds_data_<?php echo $wds; ?>.length - 1) wds_preload_<?php echo $wds; ?>(preload_key + 1);
+            })
+            .attr("src", wds_data_<?php echo $wds; ?>[preload_key]["image_url"]);
+          }
+          else {
+            if (preload_key < wds_data_<?php echo $wds; ?>.length - 1) wds_preload_<?php echo $wds; ?>(preload_key + 1);
+          }
         }
         wds_preload_<?php echo $wds; ?>(0);
         <?php } ?>
@@ -1957,6 +2197,9 @@ class WDSViewSlider {
           for (var i = 0; i < first_slide_layers_count_<?php echo $wds; ?>; i++) {
             wds_set_layer_effect_out_<?php echo $wds; ?>(i, <?php echo $start_slide_num; ?>);
           }
+        }
+        if ('<?php echo $fixed_bg; ?>' == 1) {
+          wds_window_fixed_pos<?php echo $wds; ?>();
         }
         jQuery(".wds_slideshow_filmstrip_<?php echo $wds; ?>").hover(function() {
           jQuery(".wds_slideshow_filmstrip_left_<?php echo $wds; ?> i, .wds_slideshow_filmstrip_right_<?php echo $wds; ?> i").animate({opacity: 1, filter: "Alpha(opacity=100)"}, 700, "swing");
@@ -2015,44 +2258,67 @@ class WDSViewSlider {
           }
         }
         if (<?php echo $enable_slideshow_music ?>) {
-          document.getElementById("wds_audio_<?php echo $wds; ?>").play();
-        }	 
+          if ('<?php echo $slideshow_music_url; ?>' != '') {
+            document.getElementById("wds_audio_<?php echo $wds; ?>").play();
+          }
+        }
+        var next_slide_layers_count = wds_data_<?php echo $wds; ?>[wds_current_key_<?php echo $wds; ?>]["slide_layers_count"];
+        for (var i = 0; i < next_slide_layers_count; i++) {
+          wds_set_layer_effect_out_<?php echo $wds; ?>(i, wds_current_key_<?php echo $wds; ?>);
+        }
       }
       /* Effects in part.*/		
 		  function wds_set_layer_effect_in_<?php echo $wds; ?>(j, key) {
+        var cout;
 		    wds_clear_layers_effects_in_<?php echo $wds; ?>[key][j] = setTimeout(function(){
+          cout = jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]);
           if (wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_type"] != 'social') {
-            jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]).css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_out"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_out"] / 1000 + 's');			 
-		        jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_layer_effect_in"] + ' animated');
+            cout.css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_in"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_in"] / 1000 + 's');			 
+		        cout.removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_layer_effect_in"] + ' wds_animated');
+              jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]).addClass(jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]).data("class"));
 		      }
           else {
-            jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]).css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_out"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_out"] / 1000 + 's');	
-            jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_layer_effect_in"] + ' fa fa-' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_social_button"] + ' animated');
+            cout.css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_in"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_duration_eff_in"] / 1000 + 's');	
+            cout.removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_layer_effect_in"] + ' fa fa-' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_social_button"] + ' wds_animated');
           }
           /* Play video on layer in.*/
           if (wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_type"] == "video") {
             if (wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_video_autoplay"] == "on") {
-              jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_id"]).find("iframe").each(function () {
+              cout.find("iframe").each(function () {
                 jQuery(this)[0].contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
                 jQuery(this)[0].contentWindow.postMessage('{ "method": "play" }', "*");
               });
             }
           }
+          var iteration_count = wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_infinite_in"] == 0 ? 'infinite' : wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_infinite_in"];
+          cout.css(
+            '-webkit-animation-iteration-count', iteration_count
+          ).css(
+            'animation-iteration-count', iteration_count
+          );
 		    }, wds_data_<?php echo $wds; ?>[key]["layer_" + j + "_start"]);
 		  }
       /* Effects out part.*/
 		  function wds_set_layer_effect_out_<?php echo $wds; ?>(i, key) {
+        var cout;
 			  wds_clear_layers_effects_out_<?php echo $wds; ?>[key][i] = setTimeout(function() {
+          cout = jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_id"]);
           if (wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_layer_effect_out"] != 'none') {
             if (wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_type"] != 'social') {
-              jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_id"]).css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's');				 
-              jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_layer_effect_out"] + ' animated');
+              cout.css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's');				 
+              cout.removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_layer_effect_out"] + ' wds_animated');
             }
             else {
-              jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_id"]).css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's');
-              jQuery('#wds_<?php echo $wds; ?>_slide' + wds_data_<?php echo $wds; ?>[key]["id"] + '_layer' + wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_id"]).removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_layer_effect_out"] + ' fa fa-' + wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_social_button"] + ' animated');
+              cout.css('-webkit-animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's').css('animation-duration' , wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_duration_eff_out"] / 1000 + 's');
+              cout.removeClass().addClass( wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_layer_effect_out"] + ' fa fa-' + wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_social_button"] + ' wds_animated');
             }
           }
+          var iteration_count = wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_infinite_out"] == 0 ? 'infinite' : wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_infinite_out"];
+          cout.css(
+            '-webkit-animation-iteration-count', iteration_count
+          ).css(
+            'animation-iteration-count', iteration_count
+          );
 		    }, wds_data_<?php echo $wds; ?>[key]["layer_" + i + "_end"]);
 		  }
       function play_<?php echo $wds; ?>() {
@@ -2069,11 +2335,38 @@ class WDSViewSlider {
         window.clearInterval(wds_playInterval_<?php echo $wds; ?>);
         /* Play.*/
         wds_playInterval_<?php echo $wds; ?> = setInterval(function () {
-          var iterator = 1;
-          if (<?php echo $enable_slideshow_shuffle; ?>) {
-            iterator = Math.floor((wds_data_<?php echo $wds; ?>.length - 1) * Math.random() + 1);
+          var curr_img_index = parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val());
+          if ('<?php echo $slider_loop; ?>' == 0) {
+            if (<?php echo $twoway_slideshow; ?>) {
+              if (wds_global_btn_<?php echo $wds; ?> == "left") {
+                if (curr_img_index == 0) {
+                  return false;
+                }
+              }
+              else {              
+                if (curr_img_index == <?php echo $slides_count - 1; ?>) {
+                  return false;
+                }             
+              }
+            }
+            else {
+              if (curr_img_index == <?php echo $slides_count - 1; ?>) {
+                return false;
+              }
+            }
           }
-          wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator) % wds_data_<?php echo $wds; ?>.length, wds_data_<?php echo $wds; ?>);
+          var iterator = 1;
+          var img_index = (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator) % wds_data_<?php  echo $wds; ?>.length;
+            if (<?php echo $enable_slideshow_shuffle; ?>) {
+                iterator = Math.floor((wds_data_<?php echo $wds; ?>.length - 1) * Math.random() + 1);
+            }
+            else if (<?php echo $twoway_slideshow; ?>) {
+              if (wds_global_btn_<?php echo $wds; ?> == "left") {
+                  iterator = -1;
+                  img_index = (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator) >= 0 ? (parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()) + iterator) % wds_data_<?php echo $wds; ?>.length : wds_data_<?php echo $wds; ?>.length - 1;
+                }
+            }
+           wds_change_image_<?php echo $wds; ?>(parseInt(jQuery('#wds_current_image_key_<?php echo $wds; ?>').val()), img_index, wds_data_<?php echo $wds; ?>);
         }, parseInt('<?php echo ($slideshow_interval * 1000); ?>') + wds_duration_for_change_<?php echo $wds; ?>);
       }
       jQuery(window).focus(function() {

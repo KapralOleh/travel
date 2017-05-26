@@ -14,7 +14,7 @@ $("#wa_chpc_slider").carouFredSel({
 	infinite: infinite,
 	auto 	: {
 			play:auto_s,
-			timeoutDuration:chpcsArgs.time_out
+			timeoutDuration:parseInt(chpcsArgs.time_out)
 			},
 	prev	: {	
 		button	: "#wa_chpc_slider_prev",
@@ -28,7 +28,7 @@ $("#wa_chpc_slider").carouFredSel({
 	scroll : {
 fx: chpcsArgs.fx,
 easing : chpcsArgs.easing_effect,
-duration: 500,					
+duration: parseInt(chpcsArgs.duration),					
 pauseOnHover	: true
 },
 transition:css_transition 

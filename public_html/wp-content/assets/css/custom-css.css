@@ -444,6 +444,12 @@ video {
 .tx-slide-button {
     margin-top: 10px !important;
 }
+span.wpcf7-not-valid-tip {
+    font-size: 14px;
+}
+.wpcf7-response-output {
+    display: none;
+}
 @media (min-width: 768px) {
     .bka_menu {
         height: 80px;
@@ -507,6 +513,25 @@ video {
     .center-text-block h1 {
         color: #fff;
     }
+    #contact .wpb_content_element {
+        margin-top: 25px;
+    }
+    #booking .item .info {
+        bottom: 0;
+        -webkit-transition: bottom 1s; /* Safari */
+        transition: bottom 1s;
+    }
+    .bka_footer, .bkaTopmenu, .bka_menu, .navbar-collapse.in, .navbar-collapse.colapsing, #mainNavUl .dropdown-menu, #mainNavUlLeft .dropdown-menu, #mainNavUlRight .dropdown-menu {
+        background: #1b1d1f !important;
+    }
+}
+@media (max-width: 768px) {
+    .vc_col-sm-4 {
+        width: 100% !important;
+    }
+    .home .vc_col-sm-3 {
+        width: 50% !important;
+    }
 }
 @media (max-width: 767px) {
     h1 {
@@ -521,6 +546,9 @@ video {
     }
     p {
         font-size: 14px;
+    }
+    .home .vc_col-sm-3 {
+        width: 100% !important;
     }
     .news-posts .entry {
         padding: 40px 0;

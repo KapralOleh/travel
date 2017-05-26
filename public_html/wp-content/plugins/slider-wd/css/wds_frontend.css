@@ -51,11 +51,10 @@ div[id^="wds_container"] video {
 .wds_loading_img {
   border: none !important;
   float: none;
-  height: 30px;
-  background-image: url('../images/ajax_loader.gif');
+  height: 40px;
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: 30px 30px;
+  background-size: 40px 40px;
   border: medium none !important;
 }
 
@@ -119,12 +118,12 @@ span[data-type="wds_text_parent"] * {
   padding: inherit;
 }
 
-@-webkit-keyframes wdszoom0 { 100% { background-size: 170%; }}
-@-webkit-keyframes wdszoom70 { 100% { background-size: 100%; }}
-@-moz-keyframes wdszoom0 { 100% { background-size: 170%; }}
-@-moz-keyframes wdszoom70 { 100% { background-size: 100%; }}
-@keyframes wdszoom0 { 100% { background-size: 170%; }}
-@keyframes wdszoom70 { 100% { background-size: 100%; }}
+@-webkit-keyframes wdszoom0 { 100% { background-size: 170% 170%; }}
+@-webkit-keyframes wdszoom70 { 100% { background-size: 100% 100%; }}
+@-moz-keyframes wdszoom0 { 100% { background-size: 170% 170%; }}
+@-moz-keyframes wdszoom70 { 100% { background-size: 100% 100%; }}
+@keyframes wdszoom0 { 100% { background-size: 170% 170%; }}
+@keyframes wdszoom70 { 100% { background-size: 100% 100%; }}
 
 .wds_play_btn_cont{
   width:100%; 

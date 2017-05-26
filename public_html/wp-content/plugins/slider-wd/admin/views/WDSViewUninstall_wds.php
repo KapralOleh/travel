@@ -31,6 +31,13 @@ class WDSViewUninstall_wds {
       <div class="wrap">
         <span class="uninstall_icon"></span>
         <h2>Uninstall Slider WD</h2>
+        <div class="goodbye-text">
+          <?php
+          $support_team = '<a href="https://web-dorado.com/support/contact-us.html?source=slider-wd" target="_blank">' . __('support team', 'wde') . '</a>';
+          $contact_us = '<a href="https://web-dorado.com/support/contact-us.html?source=slider-wd" target="_blank">' . __('Contact us', 'wde') . '</a>';
+          echo sprintf(__("Before uninstalling the plugin, please Contact our %s. We'll do our best to help you out with your issue. We value each and every user and value what's right for our users in everything we do.<br />
+          However, if anyway you have made a decision to uninstall the plugin, please take a minute to %s and tell what you didn't like for our plugins further improvement and development. Thank you !!!", "wde"), $support_team, $contact_us); ?>
+        </div>
         <p>
           Deactivating Slider WD plugin does not remove any data that may have been created. To completely remove this plugin, you can uninstall it here.
         </p>
@@ -86,8 +93,8 @@ class WDSViewUninstall_wds {
     global $wpdb;
     $this->model->delete_db_tables();
     $prefix = $wpdb->prefix;
-    $deactivate_url = add_query_arg(array('action' => 'deactivate', 'plugin' => 'slider-wd/slider-wd.php'), admin_url('plugins.php'));
-    $deactivate_url = wp_nonce_url($deactivate_url, 'deactivate-plugin_slider-wd/slider-wd.php');
+    $deactivate_url = add_query_arg(array('action' => 'deactivate', 'plugin' => WD_S_NAME . '/slider-wd.php'), admin_url('plugins.php'));
+    $deactivate_url = wp_nonce_url($deactivate_url, 'deactivate-plugin_' . WD_S_NAME . '/slider-wd.php');
     ?>
     <div id="message" class="wd_updated fade">
       <p>The following Database Tables successfully deleted:</p>
@@ -95,18 +102,9 @@ class WDSViewUninstall_wds {
       <p><?php echo $prefix; ?>wdsslide,</p>
       <p><?php echo $prefix; ?>wdslayer.</p>
     </div>
-    <?php
-    if (isset($_POST['bwg_delete_files'])) {
-    ?>
-    <div class="<?php echo ($flag) ? 'wd_updated' : 'wp_error'?>">
-      <p><?php echo ($flag) ? 'The folder was successfully deleted.' : 'An error occurred when deleting the folder.'?></p>
-    </div>
-    <?php
-    }
-    ?>
     <div class="wrap">
       <h2>Uninstall Slider WD</h2>
-      <p><strong><a href="<?php echo $deactivate_url; ?>">Click Here</a> To Finish the Uninstallation and Slider WD will be Deactivated Automatically.</strong></p>
+      <p><strong><a href="<?php echo $deactivate_url; ?>" class="wds_deactivate_link" data-uninstall="1">Click Here</a> To Finish the Uninstallation and Slider WD will be Deactivated Automatically.</strong></p>
       <input id="task" name="task" type="hidden" value="" />
     </div>
   <?php

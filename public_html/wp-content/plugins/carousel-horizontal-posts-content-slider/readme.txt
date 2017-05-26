@@ -5,9 +5,9 @@ Author URI: http://www.weaveapps.com
 Plugin URI: http://wordpress.org/plugins/carousel-horizontal-posts-content-slider/
 Donate link:https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BXBCGCKDD74UE
 Tags: posts slider, post slider, custom post type slider, posts content slider,Horizontal Wordpress Slider, Carousel Slider, Image Horizontal Slider, Wordpress Horizontal Posts slider, Horizontal content slider, Wordpress slider, Horizontal posts content slider, responsive post slider, responsive posts content slider, vertical slider, post carousel, posts carousel, caroufredsel,page carousel,pages slider,page,slider,carousel,post content slider,post type slider,custom post type,portfolio slider,wordpress post slider,wp slider,carousel,responsive post slider,responsive posts content slider,responsive page slider,post-page slider,post page slider,post, posts slider,post slider,pages content slider, featured image slider, featured image carousel, thumbnail image, thumbnail, banner rotator, testimonial scroller,image ticker,recent post slider,responsive carousel,logo scroller,news slider,best posts content slider, best post slider, advance post slider,logo scroller,featured posts slider, company logo slider, wordpress post slider,related posts slider, related posts, most viewed posts, newest posts slider, related posts carousel,custom post type slider, any post type slider, wp post slider
-Requires at least: 3.0
-Tested up to: 4.6
-Stable tag: 3.2.5
+Requires at least: 3.5
+Tested up to: 4.7
+Stable tag: 3.2.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 	
@@ -103,6 +103,12 @@ To insert the slider into your theme, add the following code to the appropriate 
 Appearance > Widgets > CHPC Slider.
 
 ==changelog==
+**Version 3.2.6**
+
+New - Added an option to change the duration of the animation.
+Fixed - PHP7 incompatibility issues. Added alt tag for the images. Fixed timeout issue. 
+
+
 **Version 3.2.5**
 Fixed issue where categories couldn't be selected.
 
@@ -113,6 +119,8 @@ New: Added more options to configure the slider.
 
 New - More options to configure the slider.
 Fixed - Bug fixes for improved slider quality and performance.
+
+
 
 == Screenshots ==
 

@@ -14,6 +14,14 @@ class WDSControllerUninstall_wds {
   // Constructor & Destructor                                                           //
   ////////////////////////////////////////////////////////////////////////////////////////
   public function __construct() {
+    global $wds_options;
+    if (!class_exists("DoradoWebConfig")) {
+      include_once(WD_S_DIR . "/wd/config.php");
+    }
+    $config = new DoradoWebConfig();
+    $config->set_options($wds_options);
+    $deactivate_reasons = new DoradoWebDeactivate($config);
+    $deactivate_reasons->submit_and_deactivate();
   }
   ////////////////////////////////////////////////////////////////////////////////////////
   // Public Methods                                                                     //

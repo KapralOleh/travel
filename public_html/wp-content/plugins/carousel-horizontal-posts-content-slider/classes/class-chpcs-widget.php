@@ -1,7 +1,7 @@
 <?php
 class CHPCS_widget extends WP_Widget {
 
-	public function CHPCS_widget() {
+	function __construct() {
 			parent::__construct(false, $name = __('CHPC Slider', 'wa_chpcs_txt') );
 	}
 

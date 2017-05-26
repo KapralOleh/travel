@@ -112,6 +112,13 @@ function wds_insert() {
     `bull_back_act_color` varchar(8) NOT NULL,
     `bull_back_color` varchar(8) NOT NULL,
     `bull_radius` varchar(32) NOT NULL,
+    `possib_add_google_fonts` tinyint(1) NOT NULL,
+    `possib_add_ffamily_google` varchar(255) NOT NULL,
+    `slider_loop` tinyint(1) NOT NULL,
+    `hide_on_mobile` int(4) NOT NULL,
+    `twoway_slideshow` tinyint(1) NOT NULL,
+    `full_width_for_mobile` int(4) NOT NULL,
+    `order_dir` varchar(4) NOT NULL,
     PRIMARY KEY (`id`)
   ) DEFAULT CHARSET=utf8;";
   $wpdb->query($wdsslider);
@@ -126,6 +133,8 @@ function wds_insert() {
     `link` mediumtext NOT NULL,
     `order` bigint(20) NOT NULL,
     `target_attr_slide` tinyint(1) NOT NULL,
+    `youtube_rel_video` tinyint(1) NOT NULL,
+    `video_loop` tinyint(1) NOT NULL,
     PRIMARY KEY (`id`)
   ) DEFAULT CHARSET=utf8;";
   $wpdb->query($wdsslide);
@@ -162,9 +171,9 @@ function wds_insert() {
     `imgtransparent` int(4) NOT NULL,
     `social_button` varchar(16) NOT NULL,
     `hover_color` varchar(8) NOT NULL,
-    `layer_effect_in` varchar(16) NOT NULL, 
+    `layer_effect_in` varchar(32) NOT NULL,
     `duration_eff_in` bigint(20) NOT NULL,
-    `layer_effect_out` varchar(16) NOT NULL,	
+    `layer_effect_out` varchar(32) NOT NULL,
     `duration_eff_out` bigint(20) NOT NULL,
     `target_attr_layer` tinyint(1) NOT NULL,
     `hotp_width` int(4) NOT NULL,
@@ -175,8 +184,25 @@ function wds_insert() {
     `hotp_border_radius` varchar(32) NOT NULL,
     `hotp_text_position` varchar(6) NOT NULL,
     `google_fonts` int(1) NOT NULL,
+    `add_class` varchar(127) NOT NULL,
+    `layer_video_loop` tinyint(1) NOT NULL,
+    `youtube_rel_layer_video` tinyint(1) NOT NULL,
+    `hotspot_animation` tinyint(1) NOT NULL,
+    `layer_callback_list` varchar(32) NOT NULL,
+    `hotspot_text_display` varchar(8) NOT NULL,
+    `hover_color_text` varchar(8) NOT NULL,
+    `text_alignment` varchar(8) NOT NULL,
+    `link_to_slide` int(4) NOT NULL,
+    `align_layer` tinyint(1) NOT NULL,
+    `static_layer` tinyint(1) NOT NULL,
+    `infinite_in` int(4) NOT NULL,
+    `infinite_out` int(4) NOT NULL,
+    `min_size` int(4) NOT NULL,
     PRIMARY KEY (`id`)
   ) DEFAULT CHARSET=utf8;";
   $wpdb->query($wdslayer);
+
+  $global_options = json_encode(wds_global_options_defults());
+  update_option('wds_global_options', $global_options);
   return;
 }

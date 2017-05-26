@@ -13,8 +13,8 @@ function tx_shortcodes_button() {
    }
 
 }
-//add_action('init', 'tx_shortcodes_button');
-add_action('admin_head', 'tx_shortcodes_button');
+add_action('init', 'tx_shortcodes_button');
+//add_action('admin_head', 'tx_shortcodes_button');
 
 function tx_add_plugin( $plugin_array ) {
    $plugin_array['txshortcodes'] = plugin_dir_url( __FILE__ ) . 'tx-shortcodes.js';
@@ -189,7 +189,7 @@ function tx_row_function($atts, $content = null) {
 	
 	$return_string ='';
 
-   	$return_string .= '<div class="tx-row">';
+   	$return_string .= '<div class="tx-row '.$atts['class'].'">';
 	$return_string .= do_shortcode($content);
    	$return_string .= '</div>';
 
@@ -899,6 +899,135 @@ function tx_fancyblock_function($atts, $content = null) {
 endif;
 
 
+// Video/hero Slider
+if ( !function_exists('tx_vslider_function') ) :
+
+function tx_vslider_function($atts, $content = null) {
+	
+	//[tx_vslider height="72" vurl="http://youtube.com/videourl" bgcolor="#dd3333" overlay="0.5" bgurl="http://localhost/i-max/wp-content/uploads/2016/07/Surface-Magenta-Touch-Cover.png" attachment="fixed" bgsize="cover" imgurl="http://localhost/i-max/wp-content/uploads/2015/01/i-create-logo.png" title="Slide Title" linktext="Link Text" linkurl="http://www.google.com/"]Slide Content Here[/tx_vslider]
+
+   	$atts = shortcode_atts(array(
+		'height' => '72',
+		'reduct' => 0,		
+		'vurl' => '',
+		'bgcolor' => '#dd3333',
+		'overlay' => '',
+		'bgurl' => '',
+		'attachment' => 'fixed',
+		'bgsize' => 'cover',
+		'imgurl' => '',
+		'title' => 'Slide Title',
+		'linktext' => 'Link Text', 
+		'linkurl' => 'http://www.templatesnext.org/',
+			
+   	), $atts);
+	
+	$slider_text = do_shortcode($content);
+	$video_id = "";
+	$img_css = "";
+	$bg_image = esc_url($atts['bgurl']);
+	$attachment = esc_attr($atts['attachment']);
+	$bgsize =  esc_attr($atts['bgsize']);
+	$logoimage = esc_url($atts['imgurl']);
+	$overlay =  esc_attr($atts['overlay']);
+	$reduct =  esc_attr($atts['reduct']);
+	
+	
+	if ( strpos( $atts['vurl'], 'youtu' ) !== false ) 
+	{	
+		$video_id = ( preg_match( '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $atts['vurl'], $match ) ) ? $match[1] : false;
+	}
+	
+	$img_css .= ' background-image: url('.$bg_image.');';
+	$img_css .= ' background-position: center center;';
+	$img_css .= ' background-repeat: no-repeat;';
+	$img_css .= ' background-attachment: ' . $attachment . ';';
+	$img_css .= ' background-size: '.$bgsize.';';
+	
+	$return_string ='';
+   	$return_string .= '<div class="tx-vslider" data-vslider-height="'.$atts['height'].'" data-vslider-reduct="'.$reduct.'" >';		
+   	$return_string .= '<div class="tx-imagebg" style="'.$img_css.'"></div>';	
+   	$return_string .= '<div class="tx-video-background">';
+
+   	$return_string .= '<div class="tx-vslider-content '.$overlay.'">';
+   	$return_string .= '<div class="content-wrap" style="text-align: center;">';
+	
+   	if( !empty($logoimage) ){
+		$return_string .= '<img class="vslider-img" src="'.$logoimage.'" alt="" />';
+	}
+	
+   	$return_string .= '<h2 class="vslider-title">'.esc_attr($atts['title']).'</h2>';
+	
+	if( !empty($slider_text) ){
+   		$return_string .= '<p class="vslider-content">'.esc_attr($slider_text).'</p>';
+	}
+	
+	if( !empty($atts['linkurl']) && !empty($atts['linktext']) ){
+   		$return_string .= '<button class="vslider_button button" href="'.esc_attr($atts['linkurl']).'">'.esc_attr($atts['linktext']).'</button>';
+	}
+	
+	$return_string .= '<div class="clear"></div>';
+   	$return_string .= '</div>';	
+   	$return_string .= '</div>';
+	if( !empty($video_id) && !wp_is_mobile() ){
+		$return_string .= '<div class="tx-video-foreground">';
+		$return_string .= '<iframe src="https://www.youtube.com/embed/'.$video_id.'?controls=0&amp;showinfo=0&amp;rel=0&amp;autoplay=1&amp;loop=1&amp;playlist='.$video_id.'" frameborder="0" allowfullscreen></iframe>';
+		$return_string .= '</div>';	
+	}	
+   	$return_string .= '</div>';	
+   	$return_string .= '</div> <!-- tx-tx-vslider" -->';	
+
+
+   	return $return_string;
+}
+
+endif;
+
+
+// YouTube Video [tx_youtube youtube_url="https://www.youtube.com/watch?v=KJ9NNiDlic8" width="600" controls="1" autoplay="1"]
+if ( !function_exists('tx_youtube_function') ) :
+
+function tx_youtube_function($atts) {
+	
+   	$atts = shortcode_atts(array(
+      	'youtube_url' => '',	
+      	'width' => '',
+		'controls' => 1,
+		'autoplay' => 0,
+   	), $atts);
+	
+	$youtube_url = esc_url($atts['youtube_url']);
+	$controls = esc_attr($atts['controls']);
+	$autoplay = esc_attr($atts['autoplay']);
+	$width = esc_attr($atts['width']);
+	
+	if( $width != "" )
+	{
+		$width = $width."px";
+	} else
+	{
+		$width = "100%";
+	}
+	
+	if ( strpos( $youtube_url, 'youtu' ) !== false ) 
+	{	
+		$video_id = ( preg_match( '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $youtube_url, $match ) ) ? $match[1] : false;
+	}	
+	
+	$return_string ='';
+	
+   	$return_string .= '<div class="tx-youtube-outerwarp" style="width: '.$width.'">';
+	$return_string .= '<div class="tx-youtube-warp" style="">';
+	$return_string .= '<iframe src="https://www.youtube.com/embed/'.$video_id.'?controls='.$controls.'&amp;showinfo=0&amp;rel=0&amp;autoplay='.$autoplay.'" frameborder="0" allowfullscreen></iframe>';	
+	$return_string .= '</div></div>';
+
+   	return $return_string;
+}
+
+endif;
+
+
+
 function tx_register_shortcodes(){
 	add_shortcode('tx_recentposts', 'tx_recentposts_function');
 	add_shortcode('tx_row', 'tx_row_function');
@@ -917,7 +1046,9 @@ function tx_register_shortcodes(){
 	
 	add_shortcode('tx_team', 'tx_team_function');
 	add_shortcode('tx_animate', 'tx_animate_function');
-	add_shortcode('tx_fancyblock', 'tx_fancyblock_function');										
+	add_shortcode('tx_fancyblock', 'tx_fancyblock_function');
+	add_shortcode('tx_vslider', 'tx_vslider_function');	
+	add_shortcode('tx_youtube', 'tx_youtube_function');												
 }
 
 add_action( 'init', 'tx_register_shortcodes');

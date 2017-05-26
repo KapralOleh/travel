@@ -87,3 +87,29 @@
   display: block;
   height: 100%;
 }
+
+.wds_pro_container {
+  text-align: right;
+  width: 100%;
+}
+.wds_pro_link {
+  border: none;
+  box-shadow: none !important;
+  text-decoration: none;
+}
+a.wds_pro_text, a.wds_pro_text:active, a.wds_pro_text:visited, a.wds_pro_text:hover {
+  background-color: #D8D8D8;
+  color: #175c8b;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: bold;
+  height: 54px;
+  line-height: 50px;
+  padding: 0 10px;
+  vertical-align: middle;
+}
+.wds_pro_image {
+  border: none;
+  display: inline-block;
+  vertical-align: middle;
+}

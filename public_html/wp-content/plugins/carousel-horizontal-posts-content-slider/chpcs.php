@@ -3,7 +3,7 @@
 Plugin Name: Carousel Horizontal Posts Content Slider
 Description: A simple horizontal posts content slider plugin.
 Author: subhansanjaya
-Version: 3.2.5
+Version: 3.2.6
 Plugin URI: http://wordpress.org/plugins/carousel-horizontal-posts-content-slider/
 Author URI: http://www.weaveapps.com
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BXBCGCKDD74UE
@@ -50,7 +50,8 @@ class CHPCS {
 		'direction' => 'left',
 		'custom_css' => '',
 		'default_image_url' => '',
-		'image_size' => 'thumbnail'
+		'image_size' => 'thumbnail',
+		'duration' => '500'
 	),
 	'version' => '3.2.4',
 	'configuration' => array(
@@ -220,6 +221,8 @@ class CHPCS {
 
 	$fx= $this->options['settings']['fx'];
 
+	$duration= $this->options['settings']['duration'];
+
 	$item_width= $this->options['settings']['item_width'];
 
 	$item_height= $this->options['settings']['item_height'];
@@ -257,7 +260,7 @@ class CHPCS {
 
 	.chpcs_foo_content img {
 
-		max-width: <?php echo $item_width;?>;
+		max-width: <?php echo $item_width;?>px;
 	}
 
 			.chpcs_image_carousel .chpcs_prev, .chpcs_image_carousel .chpcs_next{
@@ -406,7 +409,10 @@ class CHPCS {
   
   			if (has_post_thumbnail( $post_image_id ) ): 
 			 $img_arr = wp_get_attachment_image_src( get_post_thumbnail_id( $post_image_id ), $img_size ); $first_img = $img_arr[0];
+			$alt = get_post_meta(get_post_thumbnail_id( $post_image_id ), '_wp_attachment_image_alt', true);
 			endif; 
+
+			$alt = !empty($alt) ? $alt : 'default image';
 	
 	 		if(empty($first_img)) {
 
@@ -421,7 +427,7 @@ class CHPCS {
 
 			}
 	  }
-	  	$first_img = "<img src='". $first_img. "'/>";
+	  	$first_img = "<img src='". $first_img. "' alt='". $alt. "'/>";
 	  	return $first_img;
 	}
 
@@ -438,6 +444,7 @@ class CHPCS {
 		'touch_swipe' =>$this->options['settings']['touch_swipe']? 'true' : 'false',
 		'item_width' => $this->options['settings']['item_width'],
 		'time_out' => $this->options['settings']['timeout'],
+		'duration' => $this->options['settings']['duration'],
 		'css_transition' => $this->options['settings']['css_transition']? 'true' : 'false',
 		'infinite' =>$this->options['settings']['infinite']? 'true' : 'false',
 		'fx' => $this->options['settings']['fx']));
@@ -561,6 +568,8 @@ class CHPCS {
 		add_settings_field('wa_chpcs_easing_effect', __('Easing effect', 'wa-chpcs-txt'), array(&$this, 'wa_chpcs_easing_effect'), 'wa_chpcs_settings', 'wa_chpcs_settings');
 
 		add_settings_field('wa_chpcs_timeout', __('Timeout between elements', 'wa-chpcs-txt'), array(&$this, 'wa_chpcs_timeout'), 'wa_chpcs_settings', 'wa_chpcs_settings');
+		
+		add_settings_field('wa_chpcs_duration', __('Animation duration', 'wa-chpcs-txt'), array(&$this, 'wa_chpcs_duration'), 'wa_chpcs_settings', 'wa_chpcs_settings');
 		
 		add_settings_field('wa_chpcs_infinite', __('Infinite', 'wa-chpcs-txt'), array(&$this, 'wa_chpcs_infinite'), 'wa_chpcs_settings', 'wa_chpcs_settings');
 		
@@ -715,6 +724,18 @@ class CHPCS {
 		echo '<div id="wa_chpcs_timeout">
 			<input type="text"  value="'.esc_attr($this->options['settings']['timeout']).'" name="wa_chpcs_settings[timeout]" onkeypress="return event.charCode >= 48 && event.charCode <= 57"/>
 			<p class="description">'.__('Set the time between transitions. Only applies if Auto scroll enabled.', 'wa-chpcs-txt').'</p>
+		</div>';
+
+	}
+
+
+
+	/* time out */
+	public function wa_chpcs_duration() {
+
+		echo '<div id="wa_chpcs_duration">
+			<input type="text"  value="'.esc_attr($this->options['settings']['duration']).'" name="wa_chpcs_settings[duration]" onkeypress="return event.charCode >= 48 && event.charCode <= 57"/>
+			<p class="description">'.__('Animation duration', 'wa-chpcs-txt').'</p>
 		</div>';
 
 	}
@@ -1278,6 +1299,8 @@ class CHPCS {
 			$input['size_of_direction_arrows'] =isset($input['size_of_direction_arrows']) ? $input['size_of_direction_arrows'] : $this->defaults['settings']['size_of_direction_arrows'];
 
 			$input['timeout'] =isset($input['timeout']) ? $input['timeout'] : $this->defaults['settings']['timeout'];
+
+			$input['duration'] =isset($input['duration']) ? $input['duration'] : $this->defaults['settings']['duration'];
 
 			$input['custom_css'] =isset($input['custom_css']) ? $input['custom_css'] : $this->defaults['settings']['custom_css'];
 

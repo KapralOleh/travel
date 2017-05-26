@@ -126,7 +126,9 @@ ul.tx-fa-icons > li.active {
 
 .txx-sh-form,
 #tx-column-form,
+#tx-vslider-form,
 #tx-devider-form,
+#tx-youtube-form,
 #tx-testimonial-form,
 #tx-button-form,
 #tx-calltoact-form,
@@ -188,4 +190,25 @@ ul.tx-fa-icons > li.active {
 	position: absolute;
 	bottom: 0px;
 	left: 0px;
+}
+
+.updated > a {
+	display: inline-block;
+	text-decoration: none;
+	font-size: 20px;
+	line-height: 24px;
+	width: 24px;
+	text-align: center;
+	color: #000;
+	background-color: #eee;
+}
+.updated > a:hover {
+	background-color: #000;
+	color: #FFF;
+}
+
+
+.updated > p {
+	display: inline-block;
+	line-height: 24px;	
 }

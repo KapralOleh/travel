@@ -114,7 +114,98 @@ function wds_update($version) {
     $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `bull_back_color` varchar(8) NOT NULL DEFAULT 'CCCCCC'");
     $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `bull_radius` varchar(32) NOT NULL DEFAULT '20px'");
   }
+  if (version_compare($version, '1.1.20') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `add_class` varchar(127) NOT NULL DEFAULT ''");  
+  }
+  if (version_compare($version, '1.1.26') == -1) { 
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslide ADD `video_loop` tinyint(1) NOT NULL DEFAULT 0");  
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslide ADD `youtube_rel_video` tinyint(1) NOT NULL DEFAULT 0"); 
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `layer_video_loop` tinyint(1) NOT NULL DEFAULT 0"); 
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `youtube_rel_layer_video` tinyint(1) NOT NULL DEFAULT 0");
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `hotspot_animation` tinyint(1) NOT NULL DEFAULT 1");
+  }
+  if (version_compare($version, '1.1.27') == -1) {
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdsslider` ADD `possib_add_google_fonts` tinyint(1) NOT NULL DEFAULT 0");
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `possib_add_ffamily_google` varchar(255) NOT NULL DEFAULT ''");    
+  }
+  if (version_compare($version, '1.1.28') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `slider_loop` tinyint(1) NOT NULL DEFAULT 1");
+  }
+  if (version_compare($version, '1.1.29') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `layer_callback_list` varchar(32) NOT NULL DEFAULT ''");
+  }
+  if (version_compare($version, '1.1.32') == -1) {
+     $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `hotspot_text_display` varchar(8) NOT NULL DEFAULT 'hover'");
+  }
+  if (version_compare($version, '1.1.41') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `hover_color_text` varchar(8) NOT NULL DEFAULT ''");
+  }
+  if (version_compare($version, '1.1.49') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `text_alignment` varchar(8) NOT NULL DEFAULT 'center'");
+  }
+  if (version_compare($version, '1.1.52') == -1) { 
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `hide_on_mobile` int(4) NOT NULL DEFAULT 0");
+  }
+  if (version_compare($version, '1.1.54') == -1) {
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` CHANGE `layer_effect_in` `layer_effect_in` varchar(32)");
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` CHANGE `layer_effect_out` `layer_effect_out` varchar(32)");
+  }
+  if (version_compare($version, '1.1.58') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdslayer ADD `link_to_slide` int(4) NOT NULL DEFAULT 0");
+  }
+  if (version_compare($version, '1.1.60') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `twoway_slideshow` tinyint(1) NOT NULL DEFAULT 0");
+  }
+  if (version_compare($version, '1.1.61') == -1) {
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` ADD `align_layer` tinyint(1) NOT NULL DEFAULT 0");
+  }
+  if (version_compare($version, '1.1.62') == -1) {
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` ADD `static_layer` tinyint(1) NOT NULL DEFAULT 0");
+  }
+  if (version_compare($version, '1.1.67') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `full_width_for_mobile` int(4) NOT NULL DEFAULT 0");
+  }
+  if (version_compare($version, '1.1.68') == -1) {
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` ADD `infinite_in` int(4) NOT NULL DEFAULT 1");
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` ADD `infinite_out` int(4) NOT NULL DEFAULT 1");
+  }
+  if (version_compare($version, '1.1.70') == -1) {
+    $wpdb->query("ALTER TABLE " . $wpdb->prefix . "wdsslider ADD `order_dir` varchar(4) NOT NULL DEFAULT 'asc'");
+  }
+  if ( version_compare($version, '1.1.74') == -1 ) {
+    $sliders = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . 'wdsslider');
+    if ( $wpdb->last_error || is_null($sliders) ) {
+      return;
+    }
+
+    $wds_register_scripts = get_option("wds_register_scripts");
+    $loading_gif = get_option("wds_loading_gif", 0);
+    delete_option("wds_loading_gif");
+    delete_option("wds_register_scripts");
+
+    $possib_add_ffamily = array();
+    $possib_add_ffamily_google = array();
+    foreach ( $sliders as $slider ) {
+      $possib_add_ffamily = array_merge($possib_add_ffamily, explode("*WD*", $slider->possib_add_ffamily));
+      $possib_add_ffamily_google = array_merge($possib_add_ffamily_google, explode("*WD*", $slider->possib_add_ffamily_google));
+      $spider_uploader = $slider->spider_uploader;
+    }
+    $possib_add_ffamily = array_unique($possib_add_ffamily);
+    $font_family = implode("*WD*", $possib_add_ffamily);
+    $possib_add_ffamily_google = array_unique($possib_add_ffamily_google);
+    $google_font = implode("*WD*", $possib_add_ffamily_google);
+
+    $global_options = wds_global_options_defults();
+    $global_options['loading_gif'] = $loading_gif;
+    $global_options['register_scripts'] = $wds_register_scripts;
+    $global_options['spider_uploader'] = $spider_uploader;
+    $global_options['possib_add_ffamily'] = $font_family;
+    $global_options['possib_add_ffamily_google'] = $google_font;
+    $global_options = json_encode($global_options);
+    update_option('wds_global_options', $global_options);
+  }
+  if (version_compare($version, '1.1.77') == -1) {
+    $wpdb->query("ALTER TABLE `" . $wpdb->prefix . "wdslayer` ADD `min_size` int(4) NOT NULL DEFAULT 0");
+  }
   return;
 }
-
-?>

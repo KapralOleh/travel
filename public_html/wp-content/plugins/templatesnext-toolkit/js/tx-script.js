@@ -281,6 +281,25 @@ jQuery(document).ready(function ($) {
 			}
 		});
 	});	
+	
+	
+	if ( $('.tx-vslider').length > 0 )
+	{
+		var header_height = $('.tx-vslider').data('vslider-height');
+		var header_reduct = $('.tx-vslider').data('vslider-reduct');
+		
+		var winheight = $( window ).height();
+		var winwidth = $( window ).width();
+		
+		if( winwidth > 1200 )
+		{
+			$('.tx-vslider').css( "height", ((winheight-header_reduct)/100)*header_height );
+		} else
+		{
+			$('.tx-vslider').css( "height", winheight/2);
+		}
+				
+	}	
 
 
 });

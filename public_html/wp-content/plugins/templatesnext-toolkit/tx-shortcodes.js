@@ -14,6 +14,20 @@
 		});
 	});
 
+	/*
+	jQuery(function(){
+	
+		console.log("Yo console");
+		//Insert tx shortcode media button
+		window.addEventListener("load", function(){
+			document.getElementById("insert-tx-button").onclick = function(){	
+			
+				var $form = jQuery("#txshortcodes-form");
+				jQuery.colorbox({inline:true, href:"#tx-shortcode-form"});
+			}
+		});
+	});
+	*/
 	
 	// executes this when the DOM is ready
 	jQuery(function(){
@@ -48,7 +62,10 @@
 				<td class="shortcode-list"><span id="animation">Animate</span></td><td class="shortcode-list"><span id="fancyblock">Fancy Block</span></td>\
 			</tr>\
 			<tr>\
-				<td class="shortcode-list"><span id="txteam">Team</span></td><td class="shortcode-list"><span id=""></span></td>\
+				<td class="shortcode-list"><span id="txteam">Team</span></td><td class="shortcode-list"><span id="videoslider">Video Slider</span></td>\
+			</tr>\
+			<tr>\
+				<td class="shortcode-list"><span id="txyoutube">YouTube Video</span></td><td class="shortcode-list"><span id="noid">&nbsp;</span></td>\
 			</tr>\
 		</table>\
 		<div class="nx-sh-cancel">\
@@ -175,7 +192,21 @@
 			setTimeout(function() {
 				jQuery.colorbox({inline:true, href:"#tx-team-form"});
 			}, 500);
-		});														
+		});	
+		
+		//Insert video slider
+		form_tx.find('#videoslider').click(function(){			
+			setTimeout(function() {
+				jQuery.colorbox({inline:true, href:"#tx-vslider-form"});
+			}, 500);
+		});	
+		
+		//Insert YouTube video
+		form_tx.find('#txyoutube').click(function(){			
+			setTimeout(function() {
+				jQuery.colorbox({inline:true, href:"#tx-youtube-form"});
+			}, 500);
+		});																		
 		
 		form_tx.find('.modal-close').click(function(){
 			jQuery.colorbox.close();
@@ -1386,6 +1417,8 @@
 			// inserts the shortcode into the active editor
 			tinyMCE.activeEditor.execCommand('mceInsertContent', 0, shortcode);
 			
+			//send_to_editor(shortcode);
+			
 			// closes Thickbox
 			jQuery.colorbox.close();
 		});
@@ -1396,7 +1429,283 @@
 			
 	});
 	
+
+	/*
+	* vslider form
+	*/
+	jQuery(function(){
+		var form_vslider = jQuery('<div id="vslider-form" class="tx-sh-form"><div id="tx-vslider-form"><table id="vslider-table" class="form-table">\
+			<tr>\
+				<td class="tx-heading" colspan="2"><h2>Video/Hero Slider</h2></td>\
+			</tr>\
+            <tr>\
+				<th><label for="vslider-height">Slider Height in %</label></th>\
+				<td><input type="number" name="height" id="vslider-height" min="10" max="100" value="60" /><br />\
+				<small>Video slider height in percent(%), <b>% of window height</b></small>\
+			</tr>\
+            <tr>\
+				<th><label for="vslider-reduct">Height Reduction in px</label></th>\
+				<td><input type="number" name="reduct" id="vslider-reduct" min="1" max="300" value="0" /><br />\
+				<small>Slider height reduction in pixel(px), <b>used for header or a bottom bar</b>\
+				<br />example: i-max, i-excel, i-craft has ( Header+topbar ) : 126px</small>\
+			</tr>\
+            <tr>\
+				<th><label for="vslider-vurl">YouTube Video URL</label></th>\
+				<td><input type="url" name="vurl" id="vslider-vurl" value="" /><br />\
+				<small>YouTube Video URL</b></small>\
+			</tr>\
+            <tr>\
+				<th><label for="vslider-overlay">Overlay Layer</label></th>\
+				<td><select name="overlay" id="vslider-overlay">\
+					<option value="none">None</option>\
+					<option value="vignette">Vignette</option>\
+					<option value="pixel">Pixel Pattern</option>\
+				</select><br />\
+				<small>Overlay Layer Tranparancy, <b>.9 least transparent and .1 heighest</b></small>\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-bgurl">Background Image URL</label></th>\
+				<td><input type="text" name="bgurl" id="vslider-bgurl" /><br />\
+				<input type="button" class="tx-button" name="tx-img-upload" id="tx-upload-button" value="Upload Image">\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-bgattachment">Background Attachment</label></th>\
+				<td><select name="bgattachment" id="vslider-bgattachment">\
+					<option value="fixed">Fixed</option>\
+					<option value="scroll">Scroll</option>\
+				</select><br />\
+				<small>Select background movement</small></td>\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-bgsize">Background Size</label></th>\
+				<td><select name="bgsize" id="vslider-bgsize">\
+					<option value="cover">Cover</option>\
+					<option value="auto">Auto</option>\
+				</select><br />\
+				<small>Select background size</small></td>\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-imgurl">Logo/Image URL</label></th>\
+				<td><input type="text" name="imgurl" id="vslider-imgurl" /><br />\
+				<input type="button" class="tx-button" name="tx-img-upload2" id="tx-upload-button2" value="Upload Image">\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-title">Title</label></th>\
+				<td><input type="text" name="title" id="vslider-title" /><br />\
+				<small>Enter Title</small></td>\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-content">Content</label></th>\
+				<td><textarea name="content" id="vslider-content">Content ...</textarea><br />\
+				<small>Enter your contents here.</small>\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-linktext">Link Text (Button)</label></th>\
+				<td><input type="text" name="linktext" id="vslider-linktext" /><br />\
+				<small>Enter Link Text</small></td>\
+			</tr>\
+			<tr>\
+				<th><label for="vslider-linkurl">Link URL</label></th>\
+				<td><input type="url" name="linkurl" id="vslider-linkurl" /><br />\
+				<small>Enter Link URL</small></td>\
+			</tr>\
+        </table>\
+		<p class="submit">\
+			<input type="button" id="vslider-submit" class="button-primary" value="Insert Slider" name="submit" />\
+			<input type="button" id="modal-close" class="modal-close button-primary" value="Cancel" name="Cancel" />\
+		</p>\
+		<div class="tnext-bottom-lebel">'+tx_footer_include()+'</div>\
+		</div></div>');
+		
+		var table = form_vslider.find('#vslider-table');
+		
+		tx_color_picker(form_vslider.find('.color'));		
+		
+		form_vslider.appendTo('body').hide();
+		
+		// handles the click event of the submit button
+		form_vslider.find('#vslider-submit').click(function(){
+			
+			var height = table.find('#vslider-height').val();
+			var reduct = table.find('#vslider-reduct').val();
+			var vurl = table.find('#vslider-vurl').val();
+			//var bgcolor = table.find('#vslider-bgcolor').val();
+			var overlay = table.find('#vslider-overlay').val();			
+			var bgurl = table.find('#vslider-bgurl').val();
+			var attachment = table.find('#vslider-bgattachment').val();
+			var bgsize = table.find('#vslider-bgsize').val();
+			var imgurl = table.find('#vslider-imgurl').val();
+			var title = table.find('#vslider-title').val();
+			var content = table.find('#vslider-content').val();
+			var linktext = table.find('#vslider-linktext').val();
+			var linkurl = table.find('#vslider-linkurl').val();				
+			
+				
+			var shortcode = '[tx_vslider height="'+height+'" reduct="'+reduct+'" vurl="'+vurl+'" overlay="'+overlay+'" bgurl="'+bgurl+'" attachment="'+attachment+'" bgsize="'+bgsize+'" imgurl="'+imgurl+'" title="'+title+'"  linktext="'+linktext+'" linkurl="'+linkurl+'"]'+content+'[/tx_vslider]<br/>';
+			
+			// inserts the shortcode into the active editor
+			tinyMCE.activeEditor.execCommand('mceInsertContent', 0, shortcode);
+			
+			//Insert tx shortcode via media button
+			//wp.media.editor.insert(shortcode);
+			
+			// closes Thickbox
+			jQuery.colorbox.close();
+		});
+
+		form_vslider.find('#modal-close').click(function(){
+			jQuery.colorbox.close();
+		});	
+		
+		
+		var file_frame;
+		form_vslider.find('#tx-upload-button').click(function(event){
+
+			event.preventDefault();
+			
+			// If the media frame already exists, reopen it.
+			if ( file_frame ) {
+			  file_frame.open();
+			  return;
+			}
+		
+			// Create the media frame.
+			file_frame = wp.media.frames.file_frame = wp.media({
+			  title: jQuery( this ).data( 'uploader_title' ),
+			  button: {
+				text: jQuery( this ).data( 'uploader_button_text' ),
+			  },
+			  multiple: false  // Set to true to allow multiple files to be selected
+			});
+		
+			// When an image is selected, run a callback.
+			file_frame.on( 'select', function() {
+			  // We set multiple to false so only get one image from the uploader
+			  attachment = file_frame.state().get('selection').first().toJSON();
+		
+			  // Do something with attachment.id and/or attachment.url here
+			  table.find('#vslider-bgurl').val(attachment.url); 	
+			  
+			});
+			// Finally, open the modal
+			file_frame.open();
+			
+		});
+		
+		//Logo image URL
+		var file_frame2;
+		form_vslider.find('#tx-upload-button2').click(function(event){
+
+			event.preventDefault();
+			
+			// If the media frame already exists, reopen it.
+			if ( file_frame2 ) {
+			  file_frame2.open();
+			  return;
+			}
+			
+			// Create the media frame.
+			file_frame2 = wp.media.frames.file_frame2 = wp.media({
+			  title: jQuery( this ).data( 'uploader_title' ),
+			  button: {
+				text: jQuery( this ).data( 'uploader_button_text' ),
+			  },
+			  multiple: false  // Set to true to allow multiple files to be selected
+			});
+		
+			// When an image is selected, run a callback.
+			file_frame2.on( 'select', function() {
+			  // We set multiple to false so only get one image from the uploader
+			  attachment = file_frame2.state().get('selection').first().toJSON();
+		
+			  // Do something with attachment.id and/or attachment.url here
+			  table.find('#vslider-imgurl').val(attachment.url); 	
+			  
+			});
+			// Finally, open the modal
+			file_frame2.open();
+		});			
+			
+	});	
 	
+	
+	/*
+	* youtube form
+	*/
+	jQuery(function(){
+		var form_youtube = jQuery('<div id="youtube-form" class="tx-sh-form"><div id="tx-youtube-form"><table id="youtube-table" class="form-table">\
+			<tr>\
+				<td class="tx-heading" colspan="2"><h2>Insert YouTube Video</h2></td>\
+			</tr>\
+			<tr>\
+				<th><label for="youtube-url">YouTube Video URL</label></th>\
+				<td><input type="url" name="url" id="youtube-url" value="" /><br />\
+				<small>Enter the YouTube Video URL</small>\
+			</tr>\
+            <tr>\
+				<th><label for="youtube-width">Width</label></th>\
+				<td><input type="number" name="width" id="youtube-width" value=""><br />\
+				<small>Leave it empty for responsive video</small>\
+			</tr>\
+			<tr>\
+				<th><label for="youtube-controls">Show Controls</label></th>\
+				<td><input type="checkbox" name="controls" id="youtube-controls" value="1" checked><br />\
+				<small>Turn On/OFF video controls</small>\
+			</tr>\
+			<tr>\
+				<th><label for="youtube-autoplay">Autoplay</label></th>\
+				<td><input type="checkbox" name="autoplay" id="youtube-autoplay" value="0" /><br />\
+				<small>Turn On/OFF autoplay</small>\
+			</tr>\
+		</table>\
+		<p class="submit">\
+			<input type="button" id="button-submit" class="button-primary" value="Insert YouTube Video" name="submit" />\
+			<input type="button" id="modal-close" class="modal-close button-primary" value="Cancel" name="Cancel" />\
+		</p>\
+		<div class="tnext-bottom-lebel">'+tx_footer_include()+'</div>\
+		</div></div>');
+		
+		var table = form_youtube.find('#youtube-table');
+		
+		//tx_color_picker(form_calltoact.find('.color'));
+		
+		form_youtube.appendTo('body').hide();
+		
+		// handles the click event of the submit button
+		form_youtube.find('#button-submit').click(function(){
+			
+			var youtube_url = table.find('#youtube-url').val();
+			var youtube_width = table.find('#youtube-width').val();
+			var youtube_controls = table.find('#youtube-controls').val();
+			var youtube_autoplay = table.find('#youtube-autoplay').val();
+			
+			if(table.find('#youtube-controls').attr('checked')) {
+				youtube_controls = 1;
+			} else {
+				youtube_controls = 0
+			}
+			
+			if(table.find('#youtube-autoplay').attr('checked')) {
+				youtube_autoplay = 1;
+			} else {
+				youtube_autoplay = 0;
+			}			
+	 	
+			var shortcode = '[tx_youtube youtube_url="'+youtube_url+'" width="'+youtube_width+'" controls="'+youtube_controls+'" autoplay="'+youtube_autoplay+'"]';
+			
+			// inserts the shortcode into the active editor
+			tinyMCE.activeEditor.execCommand('mceInsertContent', 0, shortcode);
+			
+			// closes Thickbox
+			jQuery.colorbox.close();
+		});	
+		form_youtube.find('#modal-close').click(function(){
+			jQuery.colorbox.close();
+		});			
+		
+	});	
+		
+		
 	/*
 	* image form
 	*/
@@ -1506,4 +1815,5 @@ function tx_resize_thickbox() {
 	var TB_HEIGHT;
 	jQuery(document).find('#TB_window').width( TB_WIDTH ).height( TB_HEIGHT ).css( 'margin-left', - TB_WIDTH / 2 );
 }
+
 

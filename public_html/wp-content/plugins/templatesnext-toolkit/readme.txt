@@ -4,17 +4,20 @@ Contributors: marsian
 Tags: shortcode, shortcodes, columns, column, section, sections, portfolio, testimonial, border, borders, button, buttons, masonry, posts, post_type, font awesome, icons, fontawesome
 Requires at least: 3.6
 Tested up to: 4.7
-Stable tag: 2.0.5
+Stable tag: 2.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Custom Portfolio, Testimonial, Slider, Team and many other Shortcode functionalites...
+This plugin adds portfolio, team/members, itrans slider, testimonials post type along with shortcodes for
+Portfolio, Testimonials, Image Sliders, Team, Fullscreen Video slider, Youtube video and many other Shortcode functionalites...
 
 == Description ==
 
-Custom Portfolio, Testimonial, Slider, Team and Shortcode functionality for TemplatesNext Wordpress Themes.
+Custom Portfolios, Testimonial, Sliders, Team and Shortcode functionalities like Rows and columns, Deviders, 
+Spacers, Buttons, Call To Act, Services, Headings, Fullscreen Video Sliders, YouTube video, WooCommerce Product Carousels,
+Animations, Fancy Blocks, etc, for TemplatesNext Wordpress Themes.
 
-Demo and documentation : http://www.templatesnext.org/icreate/?page_id=541
+Demo and documentation : [http://www.templatesnext.org/icreate/?page_id=541](http://www.templatesnext.org/icreate/?page_id=541)
 
 https://www.youtube.com/watch?v=vqTHQCN2ci4
 
@@ -26,6 +29,10 @@ Install the plugin into the `/wp-content/plugins/` folder, and activate it.
 
 
 == Changelog ==
+= 2.0.5 =
+* Added Youtube Video shortcode
+* Added Fullscreen Video/Image slider 
+
 = 2.0.3 =
 * Comitability issue with PHP7 fixed
 

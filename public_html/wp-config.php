@@ -57,6 +57,7 @@ define('LOGGED_IN_SALT',   'put your unique phrase here');
 define('NONCE_SALT',       'put your unique phrase here');
  # Disable all automatic updates:
 define( 'AUTOMATIC_UPDATER_DISABLED', true );
+define( 'WPCF7_CAPTCHA_TMP_DIR', '/wp-content/captha/' );
 /**#@-*/
 
 /**
